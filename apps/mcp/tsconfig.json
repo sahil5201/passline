@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "types": ["bun"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@passline/core": ["../../packages/core/src/index.ts"],
+      "@passline/db": ["../../packages/db/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

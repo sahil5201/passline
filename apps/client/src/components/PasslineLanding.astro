@@ -1,0 +1,437 @@
+---
+/**
+ * PasslineLanding.astro
+ *
+ * Tailwind-styled landing page section with light + dark themes.
+ *
+ * Usage:
+ *   ---
+ *   import PasslineLanding from "../components/PasslineLanding.astro";
+ *   ---
+ *   <PasslineLanding signupHref="/signup" loginHref="/login" />
+ *
+ * Dark mode uses Tailwind's `dark:` variant:
+ *  - Tailwind v4: follows the OS by default. For a manual toggle add to your CSS:
+ *      @custom-variant dark (&:where(.dark, .dark *));
+ *  - Tailwind v3: set `darkMode: "class"` (toggle `.dark` on <html>) or `"media"`.
+ *
+ * Optional: put `scroll-smooth` on <html> in your layout for smooth anchor scrolling.
+ */
+interface Props {
+  brand?: string;
+  signupHref?: string;
+  loginHref?: string;
+  docsHref?: string;
+  privacyHref?: string;
+  termsHref?: string;
+  mcpUrl?: string;
+  /** Adds Google Fonts <link> tags (Bricolage Grotesque + Instrument Sans). Set false if your layout already loads them. */
+  loadFonts?: boolean;
+  /** Render the top nav and footer. Set false if your layout provides its own. */
+  chrome?: boolean;
+}
+
+const {
+  brand = "Passline",
+  signupHref = "/signup",
+  loginHref = "/login",
+  docsHref = "/docs",
+  privacyHref = "/privacy",
+  termsHref = "/terms",
+  mcpUrl = "https://mcp.passline.app/mcp",
+  loadFonts = true,
+  chrome = true,
+} = Astro.props;
+
+const year = new Date().getFullYear();
+
+/* ---------- shared class tokens (light + dark) ---------- */
+const display = "font-['Bricolage_Grotesque','Segoe_UI',system-ui,sans-serif]";
+const body = "font-['Instrument_Sans','Segoe_UI',system-ui,sans-serif]";
+const mono = "font-[ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]";
+
+const ink = "text-[#151B2E] dark:text-[#E8ECF7]";
+const muted = "text-[#5B657A] dark:text-[#9AA4BC]";
+const border = "border-[#E2E7F0] dark:border-[#242E4A]";
+const surface = "bg-white dark:bg-[#131A2E]";
+const page = "bg-[#F6F8FB] dark:bg-[#0B1020]";
+const accentText = "text-[#2F5BFF] dark:text-[#8FB0FF]";
+const focus =
+  "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#2F5BFF] dark:focus-visible:outline-[#8FB0FF] focus-visible:rounded-md";
+
+const tag = {
+  queued: "bg-[#E8EEFF] text-[#2F5BFF] dark:bg-[#2F5BFF]/20 dark:text-[#9DB8FF]",
+  good: "bg-[#E3F5EE] text-[#0F6B49] dark:bg-[#1A9E6E]/20 dark:text-[#6EE7B7]",
+  warn: "bg-[#FDF1DC] text-[#B96F0B] dark:bg-[#F5A524]/15 dark:text-[#F5C26B]",
+  none: "bg-[#F6F8FB] text-[#5B657A] dark:bg-[#0B1020] dark:text-[#9AA4BC]",
+};
+
+const btn =
+  "inline-block rounded-xl border border-transparent px-[22px] py-[15px] text-base font-semibold leading-none no-underline cursor-pointer transition-colors";
+const btnPrimary = `${btn} bg-[#2F5BFF] text-white hover:bg-[#2049e0] dark:bg-[#4F74FF] dark:hover:bg-[#6785FF]`;
+const btnGhost = `${btn} ${surface} ${border} ${ink} hover:border-[#c5cdde] dark:hover:border-[#3A4668]`;
+
+const h2 = `${display} text-[length:clamp(30px,3.8vw,44px)] font-bold leading-[1.1] tracking-[-0.02em]`;
+const h3 = `${display} font-bold leading-[1.1] tracking-[-0.02em]`;
+const section = "py-[60px] min-[900px]:py-[84px]";
+const wrap = "mx-auto max-w-[1120px] px-6";
+const panel = `${surface} border ${border} rounded-[18px] p-[22px] shadow-[0_20px_50px_-30px_rgba(21,27,46,0.3)] dark:shadow-[0_20px_50px_-30px_rgba(0,0,0,0.7)]`;
+const checkItem =
+  "relative pl-7 before:content-[''] before:absolute before:left-0 before:top-[.55em] before:h-2 before:w-[14px] before:-rotate-45 before:border-b-[2.5px] before:border-l-[2.5px] before:border-[#1A9E6E] dark:before:border-[#34D399]";
+
+/* ---------- content ---------- */
+const steps = [
+  { title: "Add your resume", text: "Upload a PDF, DOC, DOCX, Markdown or text file, or paste it in. Keep several versions and mark one as active." },
+  { title: "Connect your AI tool", text: "Create a token in settings and add Passline as an MCP server in Claude, ChatGPT or any client that supports remote MCP." },
+  { title: "Ask in plain language", text: "Paste a job description and ask for an ATS check. The result appears in your chat and is saved to your dashboard." },
+];
+
+const queued = [
+  { title: "Senior Backend Engineer", company: "Northwind" },
+  { title: "Platform Engineer", company: "Lumen Labs" },
+  { title: "Staff Engineer, Payments", company: "Harbor" },
+];
+const scored = [
+  { title: "Backend Developer", company: "Fieldwork", score: 84, tone: "text-[#1A9E6E] dark:text-[#34D399]" },
+  { title: "Software Engineer II", company: "Orbit", score: 61, tone: "text-[#B96F0B] dark:text-[#F5C26B]" },
+];
+
+const applications = [
+  { company: "Fieldwork", score: 84, changes: "Yes", outcome: "Interview", tone: tag.warn },
+  { company: "Orbit", score: 61, changes: "No", outcome: "No reply", tone: tag.none },
+  { company: "Northwind", score: 78, changes: "Yes", outcome: "Waiting", tone: tag.none },
+];
+
+const trust = [
+  { title: "Rewrites stay truthful", text: "Passline's prompt tells the AI to reword and reorder what's already in your resume. It never invents experience." },
+  { title: "Your resume stays yours", text: "Files are stored privately and only you can access them. Delete a version, or your whole account, at any time." },
+  { title: "Clear scoring", text: "Every score uses the same rubric: keyword match, title and experience fit, formatting, completeness, and role fit." },
+];
+
+const faqs = [
+  { q: "Is the score what a real ATS would give me?", a: "No. Every company configures its ATS differently, and none publish their scoring. Passline estimates how well your resume matches a job description and how easily software can parse it. Treat it as a guide for improving your resume, not a guarantee." },
+  { q: "Which AI tools work with Passline?", a: "Any tool that supports remote MCP servers over HTTP, including Claude and ChatGPT. Check your tool's documentation for how to add a custom connector." },
+  { q: "Does Passline see my conversations?", a: "No. Passline only receives the tool calls your AI makes, such as fetching your active resume or saving a result." },
+  { q: "What file types can I upload?", a: "PDF, DOC, DOCX, Markdown and plain text, or you can paste your resume directly. You can review and edit the extracted text to fix any parsing errors." },
+  { q: "How much does it cost?", a: "Passline is free during early access. If that changes, we'll tell you well in advance." },
+];
+
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const configSnippet = `{
+  <span class="text-[#8FB0FF]">"mcpServers"</span>: {
+    <span class="text-[#8FB0FF]">"${esc(brand.toLowerCase())}"</span>: {
+      <span class="text-[#8FB0FF]">"url"</span>: <span class="text-[#9BE3C0]">"${esc(mcpUrl)}"</span>,
+      <span class="text-[#8FB0FF]">"headers"</span>: { <span class="text-[#8FB0FF]">"Authorization"</span>: <span class="text-[#9BE3C0]">"Bearer YOUR_TOKEN"</span> }
+    }
+  }
+}`;
+---
+
+{
+  loadFonts && (
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+    </>
+  )
+}
+
+<div class={`${page} ${ink} ${body} text-[17px] leading-[1.6] antialiased`}>
+  <a
+    href="#main"
+    class="absolute -left-[999px] top-2 z-10 rounded-lg bg-[#151B2E] px-3.5 py-2 text-white focus:left-2 dark:bg-[#E8ECF7] dark:text-[#0B1020]"
+  >
+    Skip to content
+  </a>
+
+  {
+    chrome && (
+      <header class={wrap}>
+        <div class="flex items-center justify-between py-5">
+          <a href="#top" aria-label={`${brand} home`} class={`flex items-center gap-2.5 text-[21px] font-bold no-underline ${display} ${focus}`}>
+            <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#2F5BFF] dark:bg-[#4F74FF]" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            {brand}
+          </a>
+          <div class="flex items-center gap-7">
+            {[["#how", "How it works"], ["#features", "Features"], ["#faq", "FAQ"]].map(([href, label]) => (
+              <a href={href} class={`hidden text-[15px] font-medium no-underline hover:text-[#151B2E] dark:hover:text-white min-[900px]:inline ${muted} ${focus}`}>
+                {label}
+              </a>
+            ))}
+            <a href={loginHref} class={`text-[15px] font-medium no-underline hover:text-[#151B2E] dark:hover:text-white ${muted} ${focus}`}>Sign in</a>
+            <a href={signupHref} class={`${btnPrimary} !px-4 !py-2.5 !text-[15px] ${focus}`}>Get started</a>
+          </div>
+        </div>
+      </header>
+    )
+  }
+
+  <main id="main">
+    <!-- Hero -->
+    <div class={wrap} id="top">
+      <div class="grid items-center gap-10 pb-[88px] pt-7 min-[900px]:grid-cols-[1.05fr_.95fr] min-[900px]:gap-14 min-[900px]:pt-14">
+        <div>
+          <h1 class={`${display} text-[length:clamp(40px,5.4vw,66px)] font-bold leading-[1.1] tracking-[-0.02em]`}>
+            Know if your resume will pass the screen before you apply.
+          </h1>
+          <p class={`mb-8 mt-[22px] max-w-[34em] text-[19px] ${muted}`}>
+            Upload your resume once. Connect {brand} to Claude, ChatGPT or any MCP-compatible AI tool. Paste a job description and get an ATS score, the keywords you're missing, and honest rewrites.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <a href={signupHref} class={`${btnPrimary} ${focus}`}>Create free account</a>
+            <a href="#how" class={`${btnGhost} ${focus}`}>See how it works</a>
+          </div>
+          <p class={`mt-[18px] text-sm ${muted}`}>Free while we're in early access. No credit card.</p>
+        </div>
+
+        <!-- Chat mock -->
+        <div
+          class={`${surface} border ${border} rounded-[20px] p-5 text-[15px] shadow-[0_24px_60px_-28px_rgba(21,27,46,0.35)] dark:shadow-[0_24px_60px_-28px_rgba(0,0,0,0.75)]`}
+          role="img"
+          aria-label="Example chat: the user asks an AI tool to check their resume against a job description, and Passline returns a score of 78 with missing keywords and a suggested rewrite."
+        >
+          <div class="mb-4 flex gap-1.5" aria-hidden="true">
+            <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+            <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+            <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+          </div>
+          <div class={`ml-9 rounded-[14px] rounded-br-[4px] px-3.5 py-3 ${page}`}>
+            Check my resume against this Senior Backend Engineer posting at Northwind.
+          </div>
+          <div class={`mb-3 mt-3.5 inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium ${mono} ${tag.queued}`}>
+            <b class="h-[7px] w-[7px] rounded-full bg-[#1A9E6E] dark:bg-[#34D399]"></b>
+            {brand.toLowerCase()}.check_ats_compatibility
+          </div>
+          <div class={`rounded-[14px] border p-4 ${border}`}>
+            <div class={`flex items-center gap-4 border-b pb-3.5 ${border}`}>
+              <div class="relative h-[84px] w-[84px] flex-none" aria-hidden="true">
+                <svg width="84" height="84" viewBox="0 0 84 84" fill="none" class="-rotate-90">
+                  <circle cx="42" cy="42" r="36" stroke-width="8" class="stroke-[#E2E7F0] dark:stroke-[#242E4A]" />
+                  <circle cx="42" cy="42" r="36" stroke-width="8" stroke-linecap="round" class="pl-ring-bar stroke-[#1A9E6E] dark:stroke-[#34D399]" />
+                </svg>
+                <span class={`absolute inset-0 grid place-items-center text-[26px] font-bold ${display}`}>78</span>
+              </div>
+              <div>
+                <strong class="block text-base">Good match, a few gaps to close</strong>
+                <small class={`text-sm ${muted}`}>14 of 19 required keywords found</small>
+              </div>
+            </div>
+            <div class="mt-3.5">
+              <div class={`mb-1.5 text-[13px] font-semibold ${muted}`}>Missing from your resume</div>
+              <div class="flex flex-wrap gap-1.5">
+                {["Kubernetes", "gRPC", "Terraform"].map((k) => (
+                  <span class={`rounded-full px-2.5 py-[3px] text-[13px] ${tag.warn}`}>{k}</span>
+                ))}
+              </div>
+            </div>
+            <div class="mt-3.5">
+              <div class={`mb-1.5 text-[13px] font-semibold ${muted}`}>Found</div>
+              <div class="flex flex-wrap gap-1.5">
+                {["Go", "PostgreSQL", "AWS", "CI/CD"].map((k) => (
+                  <span class={`rounded-full px-2.5 py-[3px] text-[13px] ${tag.good}`}>{k}</span>
+                ))}
+              </div>
+            </div>
+            <p class={`mt-3.5 border-l-[3px] border-[#2F5BFF] pl-3 text-sm dark:border-[#8FB0FF] ${muted}`}>
+              <b class={`font-semibold ${ink}`}>Parsing issue:</b> your Skills section uses two columns, which many ATS read out of order. Switch to a single list.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <section id="how" class={`${section} ${surface} border-y ${border}`}>
+      <div class={wrap}>
+        <div class="mb-11 max-w-[640px]">
+          <h2 class={h2}>Set up once, check any job from your chat.</h2>
+          <p class={`mt-3.5 text-lg ${muted}`}>{brand} gives your AI tool two things it doesn't have: your resume, and a consistent way to score it.</p>
+        </div>
+        <div class={`grid overflow-hidden rounded-[18px] border ${border} ${page} min-[900px]:grid-cols-3`}>
+          {steps.map((s, i) => (
+            <div class={`p-7 ${i > 0 ? `border-t min-[900px]:border-l min-[900px]:border-t-0 ${border}` : ""}`}>
+              <div class={`mb-[18px] grid h-8 w-8 place-items-center rounded-full bg-[#151B2E] text-[15px] font-semibold text-white dark:bg-[#E8ECF7] dark:text-[#0B1020] ${display}`}>
+                {i + 1}
+              </div>
+              <h3 class={`${h3} mb-2 text-[21px]`}>{s.title}</h3>
+              <p class={`text-base ${muted}`}>{s.text}</p>
+            </div>
+          ))}
+        </div>
+        <pre class={`mt-7 overflow-x-auto rounded-[14px] border border-transparent bg-[#10162B] px-[22px] py-5 text-sm leading-[1.7] text-[#D7DEF5] dark:border-[#242E4A] dark:bg-[#0A0F20] ${mono}`}><code set:html={configSnippet} /></pre>
+        <p class={`mt-3 text-sm ${muted}`}>Example configuration. Exact setup varies by AI tool.</p>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class={section}>
+      <div class={wrap}>
+        <div class="mb-11 max-w-[640px]">
+          <h2 class={h2}>Built for the way you actually apply.</h2>
+          <p class={`mt-3.5 text-lg ${muted}`}>One resume per role, a queue for the jobs you're considering, and a record of what happened next.</p>
+        </div>
+
+        <!-- Row 1 -->
+        <div class="grid items-center gap-10 min-[900px]:grid-cols-2 min-[900px]:gap-16">
+          <div>
+            <h3 class={`${h3} mb-3.5 text-[length:clamp(26px,3vw,34px)]`}>Check five jobs in one go</h3>
+            <p class={`mb-4 ${muted}`}>Save job descriptions in the web app as you find them and mark them for checking. Then ask your AI tool to run the queue.</p>
+            <ul class="m-0 grid list-none gap-2.5 p-0">
+              <li class={checkItem}>Up to 5 job descriptions per run</li>
+              <li class={checkItem}>Each result is saved against the job and the resume version used</li>
+              <li class={checkItem}>Run again to pick up anything left in the queue</li>
+            </ul>
+          </div>
+          <div class={panel} aria-label="Example job queue">
+            <div class="mb-3.5 flex items-center justify-between text-[15px] font-semibold">
+              Job queue <small class={`font-medium ${muted}`}>3 waiting</small>
+            </div>
+            {queued.map((j) => (
+              <div class={`flex items-center gap-3 border-t py-3 text-[15px] first:border-t-0 ${border}`}>
+                <div class="min-w-0 flex-1">
+                  {j.title}
+                  <span class={`block text-[13px] ${muted}`}>{j.company}</span>
+                </div>
+                <span class={`whitespace-nowrap rounded-full px-2.5 py-[3px] text-[12.5px] font-semibold ${tag.queued}`}>Queued</span>
+              </div>
+            ))}
+            {scored.map((j) => (
+              <div class={`flex items-center gap-3 border-t py-3 text-[15px] ${border}`}>
+                <div class="min-w-0 flex-1">
+                  {j.title}
+                  <span class={`block text-[13px] ${muted}`}>{j.company}</span>
+                </div>
+                <span class={`w-[34px] text-right text-lg font-bold ${display} ${j.tone}`}>{j.score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Row 2 (flipped on desktop) -->
+        <div class="mt-[88px] grid items-center gap-10 min-[900px]:grid-cols-2 min-[900px]:gap-16">
+          <div class="min-[900px]:order-2">
+            <h3 class={`${h3} mb-3.5 text-[length:clamp(26px,3vw,34px)]`}>See what's working</h3>
+            <p class={`mb-4 ${muted}`}>After each check, answer two quick questions: did you apply with the suggested changes, and did you hear back. Over time you'll see which resume versions get responses.</p>
+            <ul class="m-0 grid list-none gap-2.5 p-0">
+              <li class={checkItem}>Track every application in one table</li>
+              <li class={checkItem}>Compare response rates with and without ATS changes</li>
+              <li class={checkItem}>Update the outcome whenever you hear back</li>
+            </ul>
+          </div>
+          <div class={`${panel} min-[900px]:order-1`} aria-label="Example application tracker">
+            <div class="mb-3.5 flex items-center justify-between text-[15px] font-semibold">
+              Applications <small class={`font-medium ${muted}`}>This month</small>
+            </div>
+            <table class="w-full border-collapse text-[14.5px]">
+              <thead>
+                <tr>
+                  {["Company", "Score", "Applied with changes", "Outcome"].map((h) => (
+                    <th class={`pb-2.5 pr-2 text-left text-[13px] font-semibold ${muted}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {applications.map((a) => (
+                  <tr>
+                    <td class={`border-t py-3 pr-2 align-middle ${border}`}>{a.company}</td>
+                    <td class={`border-t py-3 pr-2 align-middle ${border}`}>{a.score}</td>
+                    <td class={`border-t py-3 pr-2 align-middle ${border}`}>{a.changes}</td>
+                    <td class={`border-t py-3 pr-2 align-middle ${border}`}>
+                      <span class={`whitespace-nowrap rounded-full px-2.5 py-[3px] text-[12.5px] font-semibold ${a.tone}`}>{a.outcome}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div class="mt-4 rounded-xl bg-[#E8EEFF] px-3.5 py-3 text-[14.5px] text-[#1c3bb3] dark:bg-[#2F5BFF]/20 dark:text-[#B5C8FF]">
+              Applications with ATS changes are getting more replies so far.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust -->
+    <section class={`${section} ${surface} border-y ${border}`}>
+      <div class={wrap}>
+        <div class="mb-11 max-w-[640px]"><h2 class={h2}>Honest by design.</h2></div>
+        <div class="grid gap-10 min-[900px]:grid-cols-3">
+          {trust.map((t) => (
+            <div>
+              <h3 class={`${h3} mb-2 text-xl`}>{t.title}</h3>
+              <p class={`text-base ${muted}`}>{t.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class={section}>
+      <div class={`${wrap} max-w-[760px]`}>
+        <div class="mb-11 max-w-[640px]"><h2 class={h2}>Questions</h2></div>
+        <div class={`border-b ${border}`}>
+          {faqs.map((f) => (
+            <details class={`group border-t py-5 ${border}`}>
+              <summary class={`flex cursor-pointer list-none justify-between gap-4 text-lg font-semibold [&::-webkit-details-marker]:hidden ${display} ${focus}`}>
+                {f.q}
+                <span class={`text-2xl leading-none transition-transform group-open:rotate-45 ${muted}`} aria-hidden="true">+</span>
+              </summary>
+              <p class={`mt-3 max-w-[44em] ${muted}`}>{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <div class={wrap}>
+      <div class="mb-[72px] rounded-[28px] border border-transparent bg-[#151B2E] px-6 py-12 text-center text-white dark:border-[#242E4A] dark:bg-[#18213B] min-[900px]:px-10 min-[900px]:py-16">
+        <h2 class={`${h2} mx-auto mb-3.5 max-w-[15em] text-[length:clamp(30px,4vw,46px)]`}>Find the gaps before a recruiter does.</h2>
+        <p class="mb-[30px] text-[#B7C0D9]">Set up in a few minutes. Works with the AI tool you already use.</p>
+        <a href={signupHref} class={`${btn} bg-white !text-[#151B2E] hover:bg-[#E8EEFF] ${focus}`}>Create free account</a>
+      </div>
+    </div>
+  </main>
+
+  {
+    chrome && (
+      <footer class={`border-t px-0 pb-12 pt-8 text-[14.5px] ${border} ${muted}`}>
+        <div class={`${wrap} flex flex-wrap justify-between gap-4`}>
+          <span>&copy; {year} {brand}</span>
+          <nav aria-label="Footer" class="flex gap-[22px]">
+            <a href={privacyHref} class={`no-underline hover:text-[#151B2E] dark:hover:text-white ${focus}`}>Privacy</a>
+            <a href={termsHref} class={`no-underline hover:text-[#151B2E] dark:hover:text-white ${focus}`}>Terms</a>
+            <a href={docsHref} class={`no-underline hover:text-[#151B2E] dark:hover:text-white ${focus}`}>Docs</a>
+          </nav>
+        </div>
+      </footer>
+    )
+  }
+</div>
+
+<style>
+  .pl-ring-bar {
+    stroke-dasharray: 226;
+    stroke-dashoffset: 50;
+    animation: pl-fill 1.4s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  @keyframes pl-fill {
+    from {
+      stroke-dashoffset: 226;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pl-ring-bar {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,16 @@
+{
+  "name": "passline",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "bun run --cwd apps/web dev",
+    "dev:mcp": "bun run --cwd apps/mcp dev",
+    "typecheck": "bun run --filter @passline/core typecheck && bun run --filter @passline/db typecheck && bun run --filter web typecheck",
+    "build:web": "bun run --filter web build",
+    "lint:web": "bun run --filter web lint"
+  },
+  "packageManager": "bun@1.4.2"
+}

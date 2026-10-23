@@ -1,0 +1,27 @@
+{
+  "name": "@passline/core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./ats": "./src/ats/index.ts",
+    "./extraction": "./src/extraction/index.ts",
+    "./services": "./src/services/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@passline/db": "workspace:*",
+    "@supabase/supabase-js": "^2.49.8",
+    "mammoth": "^1.9.0",
+    "unpdf": "^1.8.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

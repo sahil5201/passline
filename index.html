@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passline: check your resume against any job, from your AI tool</title>
+<meta name="description" content="Upload your resume once, connect Passline to Claude, ChatGPT or any MCP-compatible AI tool, and get an ATS score, missing keywords and truthful rewrites for every job description.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F8FB; --surface:#FFFFFF; --ink:#151B2E; --muted:#5B657A; --line:#E2E7F0;
+  --accent:#2F5BFF; --accent-ink:#FFFFFF; --accent-soft:#E8EEFF;
+  --good:#1A9E6E; --good-soft:#E3F5EE; --warn:#B96F0B; --warn-soft:#FDF1DC;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0;letter-spacing:-.02em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:8px 14px;border-radius:8px;z-index:10}
+.skip:focus{left:8px}
+
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:21px;text-decoration:none}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:15px;font-weight:500}
+.nav-links a:hover{color:var(--ink)}
+.btn{display:inline-block;font:600 16px/1 var(--body);padding:15px 22px;border-radius:12px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:#2049e0}
+.btn-ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:#c5cdde}
+.btn-sm{padding:10px 16px;font-size:15px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:56px 0 88px}
+.hero h1{font-size:clamp(40px,5.4vw,66px);font-weight:700}
+.hero .lede{font-size:19px;color:var(--muted);margin:22px 0 32px;max-width:34em}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.hero-note{margin-top:18px;font-size:14px;color:var(--muted)}
+
+/* chat mock */
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 60px -28px rgba(21,27,46,.35);padding:20px;font-size:15px}
+.chat-bar{display:flex;gap:6px;margin-bottom:16px}
+.chat-bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.msg-user{background:var(--bg);border-radius:14px 14px 4px 14px;padding:12px 14px;margin-left:36px}
+.tool{display:inline-flex;align-items:center;gap:8px;margin:14px 0 12px;font:500 13px var(--mono);color:var(--accent);background:var(--accent-soft);padding:6px 10px;border-radius:8px}
+.tool b{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.result{border:1px solid var(--line);border-radius:14px;padding:16px}
+.score-row{display:flex;align-items:center;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.ring{position:relative;width:84px;height:84px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .track{stroke:var(--line)}
+.ring .bar{stroke:var(--good);stroke-dasharray:226;stroke-dashoffset:50;animation:fill 1.4s .3s cubic-bezier(.2,.7,.2,1) backwards}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font:700 26px var(--display)}
+@keyframes fill{from{stroke-dashoffset:226}}
+.score-row strong{display:block;font-size:16px}
+.score-row small{color:var(--muted);font-size:14px}
+.kw{margin-top:14px}
+.kw-label{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:3px 10px;border-radius:99px;background:var(--good-soft);color:#0F6B49}
+.chip.miss{background:var(--warn-soft);color:var(--warn)}
+.fix{margin-top:14px;font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px}
+.fix b{color:var(--ink);font-weight:600}
+
+/* sections */
+section{padding:84px 0}
+.sec-head{max-width:640px;margin-bottom:44px}
+.sec-head h2{font-size:clamp(30px,3.8vw,44px);font-weight:700}
+.sec-head p{color:var(--muted);margin-top:14px;font-size:18px}
+.band{background:var(--surface);border-block:1px solid var(--line)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;counter-reset:s;border:1px solid var(--line);border-radius:18px;background:var(--bg);overflow:hidden}
+.step{padding:28px;counter-increment:s}
+.step+.step{border-left:1px solid var(--line)}
+.step::before{content:counter(s);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 15px var(--display);margin-bottom:18px}
+.step h3{font-size:21px;margin-bottom:8px}
+.step p{color:var(--muted);font-size:16px}
+pre{margin:28px 0 0;background:#10162B;color:#D7DEF5;border-radius:14px;padding:20px 22px;overflow-x:auto;font:14px/1.7 var(--mono)}
+pre .k{color:#8FB0FF}.s{color:#9BE3C0}
+.pre-cap{margin-top:12px;font-size:14px;color:var(--muted)}
+
+/* feature rows */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.row+.row{margin-top:88px}
+.row.flip .copy{order:2}
+.copy h3{font-size:clamp(26px,3vw,34px);margin-bottom:14px}
+.copy p{color:var(--muted);margin-bottom:16px}
+.copy ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.copy li{position:relative;padding-left:28px}
+.copy li::before{content:"";position:absolute;left:0;top:.55em;width:14px;height:8px;border-left:2.5px solid var(--good);border-bottom:2.5px solid var(--good);transform:rotate(-45deg) translateY(-50%)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 20px 50px -30px rgba(21,27,46,.3)}
+.panel-title{display:flex;justify-content:space-between;align-items:center;font-weight:600;margin-bottom:14px;font-size:15px}
+.panel-title small{color:var(--muted);font-weight:500}
+.q{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.q:first-of-type{border-top:0}
+.q .t{flex:1;min-width:0}
+.q .t span{display:block;color:var(--muted);font-size:13px}
+.tag{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.tag.queued{background:var(--accent-soft);color:var(--accent)}
+.tag.done{background:var(--good-soft);color:#0F6B49}
+.tag.int{background:var(--warn-soft);color:var(--warn)}
+.tag.none{background:var(--bg);color:var(--muted)}
+.sc{font:700 18px var(--display);width:34px;text-align:right}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:0 8px 10px 0}
+td{padding:12px 8px 12px 0;border-top:1px solid var(--line);vertical-align:middle}
+.insight{margin-top:16px;padding:12px 14px;background:var(--accent-soft);border-radius:12px;font-size:14.5px;color:#1c3bb3}
+
+/* trust + faq */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.trust h3{font-size:20px;margin-bottom:8px}
+.trust p{color:var(--muted);font-size:16px}
+details{border-top:1px solid var(--line);padding:20px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font:600 18px var(--display);list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:24px;line-height:1;color:var(--muted);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--muted);margin-top:12px;max-width:44em}
+.faq{max-width:760px}
+
+/* final cta */
+.final{background:var(--ink);color:#fff;border-radius:28px;padding:64px 40px;text-align:center;margin-bottom:72px}
+.final h2{font-size:clamp(30px,4vw,46px);max-width:15em;margin:0 auto 14px}
+.final p{color:#B7C0D9;margin-bottom:30px}
+.final .btn-primary{background:#fff;color:var(--ink)}
+.final .btn-primary:hover{background:#E8EEFF}
+
+footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:14.5px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+footer nav{display:flex;gap:22px}
+footer a{text-decoration:none}footer a:hover{color:var(--ink)}
+
+@media (max-width:900px){
+  .hero,.row{grid-template-columns:1fr;gap:40px}
+  .row.flip .copy{order:0}
+  .hero{padding-top:28px}
+  .steps,.trust{grid-template-columns:1fr}
+  .step+.step{border-left:0;border-top:1px solid var(--line)}
+  .nav-links a.hide-sm{display:none}
+  section{padding:60px 0}
+  .final{padding:48px 24px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ring .bar{animation:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="wrap">
+  <div class="nav">
+    <a class="logo" href="#top" aria-label="Passline home">
+      <span class="logo-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Passline
+    </a>
+    <div class="nav-links">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#features">Features</a>
+      <a class="hide-sm" href="#faq">FAQ</a>
+      <a href="/login">Sign in</a>
+      <a class="btn btn-primary btn-sm" href="/signup">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap" id="top">
+  <div class="hero">
+    <div>
+      <h1>Know if your resume will pass the screen before you apply.</h1>
+      <p class="lede">Upload your resume once. Connect Passline to Claude, ChatGPT or any MCP-compatible AI tool. Paste a job description and get an ATS score, the keywords you're missing, and honest rewrites.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/signup">Create free account</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="hero-note">Free while we're in early access. No credit card.</p>
+    </div>
+
+    <div class="chat" role="img" aria-label="Example chat: the user asks an AI tool to check their resume against a job description, and Passline returns a score of 78 with missing keywords and a suggested rewrite.">
+      <div class="chat-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="msg-user">Check my resume against this Senior Backend Engineer posting at Northwind.</div>
+      <div class="tool"><b></b>passline.check_ats_compatibility</div>
+      <div class="result">
+        <div class="score-row">
+          <div class="ring" aria-hidden="true">
+            <svg width="84" height="84" viewBox="0 0 84 84" fill="none">
+              <circle class="track" cx="42" cy="42" r="36" stroke-width="8"/>
+              <circle class="bar" cx="42" cy="42" r="36" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+            <span>78</span>
+          </div>
+          <div>
+            <strong>Good match, a few gaps to close</strong>
+            <small>14 of 19 required keywords found</small>
+          </div>
+        </div>
+        <div class="kw">
+          <div class="kw-label">Missing from your resume</div>
+          <div class="chips"><span class="chip miss">Kubernetes</span><span class="chip miss">gRPC</span><span class="chip miss">Terraform</span></div>
+        </div>
+        <div class="kw">
+          <div class="kw-label">Found</div>
+          <div class="chips"><span class="chip">Go</span><span class="chip">PostgreSQL</span><span class="chip">AWS</span><span class="chip">CI/CD</span></div>
+        </div>
+        <p class="fix"><b>Parsing issue:</b> your Skills section uses two columns, which many ATS read out of order. Switch to a single list.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Set up once, check any job from your chat.</h2>
+      <p>Passline gives your AI tool two things it doesn't have: your resume, and a consistent way to score it.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>Add your resume</h3>
+        <p>Upload a PDF, DOC, DOCX, Markdown or text file, or paste it in. Keep several versions and mark one as active.</p>
+      </div>
+      <div class="step">
+        <h3>Connect your AI tool</h3>
+        <p>Create a token in settings and add Passline as an MCP server in Claude, ChatGPT or any client that supports remote MCP.</p>
+      </div>
+      <div class="step">
+        <h3>Ask in plain language</h3>
+        <p>Paste a job description and ask for an ATS check. The result appears in your chat and is saved to your dashboard.</p>
+      </div>
+    </div>
+<pre><code>{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"passline"</span>: {
+      <span class="k">"url"</span>: <span class="s">"https://mcp.passline.app/mcp"</span>,
+      <span class="k">"headers"</span>: { <span class="k">"Authorization"</span>: <span class="s">"Bearer YOUR_TOKEN"</span> }
+    }
+  }
+}</code></pre>
+    <p class="pre-cap">Example configuration. Exact setup varies by AI tool.</p>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Built for the way you actually apply.</h2>
+      <p>One resume per role, a queue for the jobs you're considering, and a record of what happened next.</p>
+    </div>
+
+    <div class="row">
+      <div class="copy">
+        <h3>Check five jobs in one go</h3>
+        <p>Save job descriptions in the web app as you find them and mark them for checking. Then ask your AI tool to run the queue.</p>
+        <ul>
+          <li>Up to 5 job descriptions per run</li>
+          <li>Each result is saved against the job and the resume version used</li>
+          <li>Run again to pick up anything left in the queue</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example job queue">
+        <div class="panel-title">Job queue <small>3 waiting</small></div>
+        <div class="q"><div class="t">Senior Backend Engineer<span>Northwind</span></div><span class="tag queued">Queued</span></div>
+        <div class="q"><div class="t">Platform Engineer<span>Lumen Labs</span></div><span class="tag queued">Queued</span></div>
+        <div class="q"><div class="t">Staff Engineer, Payments<span>Harbor</span></div><span class="tag queued">Queued</span></div>
+        <div class="q"><div class="t">Backend Developer<span>Fieldwork</span></div><span class="sc" style="color:var(--good)">84</span></div>
+        <div class="q"><div class="t">Software Engineer II<span>Orbit</span></div><span class="sc" style="color:var(--warn)">61</span></div>
+      </div>
+    </div>
+
+    <div class="row flip">
+      <div class="copy">
+        <h3>See what's working</h3>
+        <p>After each check, answer two quick questions: did you apply with the suggested changes, and did you hear back. Over time you'll see which resume versions get responses.</p>
+        <ul>
+          <li>Track every application in one table</li>
+          <li>Compare response rates with and without ATS changes</li>
+          <li>Update the outcome whenever you hear back</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example application tracker">
+        <div class="panel-title">Applications <small>This month</small></div>
+        <table>
+          <thead><tr><th>Company</th><th>Score</th><th>Applied with changes</th><th>Outcome</th></tr></thead>
+          <tbody>
+            <tr><td>Fieldwork</td><td>84</td><td>Yes</td><td><span class="tag int">Interview</span></td></tr>
+            <tr><td>Orbit</td><td>61</td><td>No</td><td><span class="tag none">No reply</span></td></tr>
+            <tr><td>Northwind</td><td>78</td><td>Yes</td><td><span class="tag none">Waiting</span></td></tr>
+          </tbody>
+        </table>
+        <div class="insight">Applications with ATS changes are getting more replies so far.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="sec-head"><h2>Honest by design.</h2></div>
+    <div class="trust">
+      <div>
+        <h3>Rewrites stay truthful</h3>
+        <p>Passline's prompt tells the AI to reword and reorder what's already in your resume. It never invents experience.</p>
+      </div>
+      <div>
+        <h3>Your resume stays yours</h3>
+        <p>Files are stored privately and only you can access them. Delete a version, or your whole account, at any time.</p>
+      </div>
+      <div>
+        <h3>Clear scoring</h3>
+        <p>Every score uses the same rubric: keyword match, title and experience fit, formatting, completeness, and role fit.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faq">
+    <div class="sec-head"><h2>Questions</h2></div>
+    <details>
+      <summary>Is the score what a real ATS would give me?</summary>
+      <p>No. Every company configures its ATS differently, and none publish their scoring. Passline estimates how well your resume matches a job description and how easily software can parse it. Treat it as a guide for improving your resume, not a guarantee.</p>
+    </details>
+    <details>
+      <summary>Which AI tools work with Passline?</summary>
+      <p>Any tool that supports remote MCP servers over HTTP, including Claude and ChatGPT. Check your tool's documentation for how to add a custom connector.</p>
+    </details>
+    <details>
+      <summary>Does Passline see my conversations?</summary>
+      <p>No. Passline only receives the tool calls your AI makes, such as fetching your active resume or saving a result.</p>
+    </details>
+    <details>
+      <summary>What file types can I upload?</summary>
+      <p>PDF, DOC, DOCX, Markdown and plain text, or you can paste your resume directly. You can review and edit the extracted text to fix any parsing errors.</p>
+    </details>
+    <details>
+      <summary>How much does it cost?</summary>
+      <p>Passline is free during early access. If that changes, we'll tell you well in advance.</p>
+    </details>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="final">
+    <h2>Find the gaps before a recruiter does.</h2>
+    <p>Set up in a few minutes. Works with the AI tool you already use.</p>
+    <a class="btn btn-primary" href="/signup">Create free account</a>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Passline</span>
+    <nav aria-label="Footer">
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/docs">Docs</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

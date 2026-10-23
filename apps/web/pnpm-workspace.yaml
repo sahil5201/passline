@@ -1,0 +1,7 @@
+# Workspace root is the monorepo (Bun). This file kept empty for tooling that expects it locally.
+packages: []
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  msw: false

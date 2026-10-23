@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "passline": {
+      "type": "http",
+      "url": "http://localhost:8001/mcp",
+      "headers": {
+        "Authorization": "Bearer pln_kuKxB40YjX3qoWeYA5IxFO0Lw7V6zRk1rh0oSd5nlRw"
+      }
+    }
+  }
+}

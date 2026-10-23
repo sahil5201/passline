@@ -1,0 +1,12 @@
+{
+  "allow": [
+    {
+      "permission": "read file",
+      "tools": ["cat", "head", "tail", "grep"]
+    },
+    {
+      "permission": "read MCP server tools",
+      "tools": ["mcp__passline__*", "figma:figma-*", "dataviz:*"]
+    }
+  ]
+}

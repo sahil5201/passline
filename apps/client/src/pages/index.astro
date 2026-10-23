@@ -1,0 +1,14 @@
+---
+import PasslineLanding from "../components/PasslineLanding.astro";
+import Layout from "../layouts/Layout.astro";
+const publicUrl = import.meta.env.PUBLIC_URL || "http://localhost:3000";
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<Layout>
+  <PasslineLanding
+    signupHref={`${publicUrl}/signup`}
+    loginHref={`${publicUrl}/login`}
+  />
+</Layout>
