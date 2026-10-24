@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname, "../.."),
   },
   transpilePackages: ["@passline/core", "@passline/db"],
+  allowedDevOrigins: ['192.168.1.153'],
 }
 
 export default nextConfig

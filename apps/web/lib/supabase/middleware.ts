@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
-const PUBLIC_PREFIXES = ["/login", "/signup", "/auth"]
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth", "/forgot-password","/update-password"]
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
