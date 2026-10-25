@@ -18,10 +18,9 @@ export async function GET(request: Request) {
     console.log('type', type)
     console.log('next', next)
     if (!token_hash || type !== "recovery") {
-        return ""
-        // NextResponse.redirect(
-        //     new URL("/forgot-password?error=Invalid+reset+link", url.origin)
-        // )
+        return NextResponse.redirect(
+            new URL("/forgot-password?error=Invalid+reset+link", url.origin)
+        )
     }
 
     const supabase = await createClient()
@@ -33,13 +32,12 @@ export async function GET(request: Request) {
 
     if (error) {
         console.error("Recovery verification failed:", error.message)
-        return ""
-        // NextResponse.redirect(
-        //     new URL(
-        //         `/forgot-password?error=${encodeURIComponent(error.message)}`,
-        //         url.origin
-        //     )
-        // )
+        return NextResponse.redirect(
+            new URL(
+                `/forgot-password?error=${encodeURIComponent(error.message)}`,
+                url.origin
+            )
+        )
     }
 
     return NextResponse.redirect(new URL(safeNext, url.origin))

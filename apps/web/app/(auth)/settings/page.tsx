@@ -6,7 +6,6 @@ import {
   revokeTokenAction,
 } from "@/app/actions/tokens"
 import { deleteMyDataAction } from "@/app/actions/account"
-import { AppShell } from "@/components/app-shell"
 import { TokenCreateForm } from "@/components/token-create-form"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,14 +25,19 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { requireUser } from "@/lib/session"
-import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Settings",
+};
 
 export default async function SettingsPage() {
   const { supabase, user } = await requireUser()
   const tokens = await new TokenService(supabase, user.id).list()
 
   return (
-    <AppShell title="Settings" user={toNavUser(user)}>
+    <Fragment>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">MCP API tokens</CardTitle>
@@ -131,6 +135,6 @@ export default async function SettingsPage() {
           </form>
         </CardContent>
       </Card>
-    </AppShell>
+    </Fragment>
   )
 }

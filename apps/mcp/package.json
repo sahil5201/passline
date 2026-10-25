@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@hono/mcp": "^0.3.2",
+    "@modelcontextprotocol/ext-apps": "^2.0.3",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@passline/core": "workspace:*",
     "@passline/db": "workspace:*",

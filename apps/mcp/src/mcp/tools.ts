@@ -29,6 +29,19 @@ import {
 } from "@passline/core"
 import { toolError, toolSuccess } from "./respond"
 import { resolveResumeStoragePath } from "./storage-path"
+import {
+  registerAppTool,
+  registerAppResource,
+  RESOURCE_MIME_TYPE,
+} from "@modelcontextprotocol/ext-apps/server"
+const atsResultHtml = await Bun.file(
+  new URL("./ui/ats-result.html", import.meta.url),
+).text();
+const html = atsResultHtml.replace(
+  "__DASHBOARD_URL__",
+  process.env.DASHBOARD_URL ?? "http://localhost:3000",
+)
+const ATS_UI_URI = "ui://ats/result.html"
 
 export const MCP_TOOLS = [
   "list_resumes",
@@ -173,30 +186,83 @@ export function registerMcpTools(
     },
   )
 
-  server.registerTool(
+  // server.registerTool(
+  //   "save_ats_result",
+  //   {
+  //     title: "Save ATS result",
+  //     description:
+  //       "Validate and store an AI-generated ATS analysis. Provide job_id or jd_text. Marks the job as analyzed.",
+  //     inputSchema: saveAtsResultInputSchema,
+  //     outputSchema: saveAtsResultOutputSchema,
+  //     _meta: { ui: { resourceUri: ATS_UI_URI } },
+  //   },
+  //   async (args) => {
+  //     try {
+  //       const input = saveAtsResultInputSchema.parse(args)
+  //       const saved = await results.saveAtsResult(input)
+  //       return toolSuccess({
+  //         result_id: saved.result.id,
+  //         job_id: saved.job_id,
+  //         resume_id: saved.resume_id,
+  //         score: Number(saved.result.score),
+  //         status: "analyzed" as const,
+  //       })
+  //     } catch (err) {
+  //       return toolError(err)
+  //     }
+  //   },
+  // )
+
+  const kw = (list: unknown): string[] =>
+    (Array.isArray(list) ? list : [])
+      .map((k) => (typeof k === "string" ? k : (k as any)?.keyword ?? (k as any)?.name))
+      .filter((k): k is string => typeof k === "string" && k.length > 0)
+
+  registerAppTool(
+    server,
     "save_ats_result",
     {
       title: "Save ATS result",
       description:
-        "Validate and store an AI-generated ATS analysis. Provide job_id or jd_text. Marks the job as analyzed.",
+        "Validate and store an AI-generated ATS analysis. Provide job_id or jd_text. Marks the job as analyzed. Displays the score card.",
       inputSchema: saveAtsResultInputSchema,
-      outputSchema: saveAtsResultOutputSchema,
+      outputSchema: saveAtsResultOutputSchema, // must now include the card fields
+      _meta: { ui: { resourceUri: ATS_UI_URI } },
     },
-    async (args) => {
+    async (args: any) => {
       try {
-        const input = saveAtsResultInputSchema.parse(args)
+        const input: any = saveAtsResultInputSchema.parse(args)
         const saved = await results.saveAtsResult(input)
+        const r = input.result
+
         return toolSuccess({
           result_id: saved.result.id,
           job_id: saved.job_id,
           resume_id: saved.resume_id,
           score: Number(saved.result.score),
           status: "analyzed" as const,
+          matched_keywords: r.matched_keywords,
+          missing_keywords: r.missing_keywords,
+          section_feedback: r.section_feedback,
+          formatting_issues: r.formatting_issues,
+          suggested_changes: r.suggested_changes,
         })
       } catch (err) {
         return toolError(err)
       }
-    },
+    }
+  )
+
+  registerAppResource(
+    server,
+    "ATS result card",
+    ATS_UI_URI,
+    { _meta: { ui: {} } },
+    async () => ({
+      contents: [
+        { uri: ATS_UI_URI, mimeType: RESOURCE_MIME_TYPE, text: html },
+      ],
+    }),
   )
 
   server.registerTool(

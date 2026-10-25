@@ -50,7 +50,7 @@ export function ForgotPassword({
                     <ResendResetButton email={email} />
                     <FieldDescription className="text-center">
                         Please log in with your new password.
-                       &nbsp;<Link href="/login" className="underline-offset-4 hover:underline">
+                        &nbsp;<Link href="/login" className="underline-offset-4 hover:underline">
                             Login
                         </Link>
                     </FieldDescription>
@@ -61,8 +61,8 @@ export function ForgotPassword({
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
-                <CardHeader>
-                    <CardTitle>Forgot your password?</CardTitle>
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">Forgot your password?</CardTitle>
                     <CardDescription>
                         {`Enter your email address, and we'll send you a password reset link.`}
                     </CardDescription>
@@ -91,6 +91,13 @@ export function ForgotPassword({
                                 <Button type="submit" className="w-full">
                                     Send Reset Link
                                 </Button>
+
+                                <FieldDescription className="text-center">
+                                    {"Do you remember the password? "}
+                                    <Link href="/login" className="underline-offset-4 hover:underline">
+                                        Login
+                                    </Link>
+                                </FieldDescription>
                             </Field>
                         </FieldGroup>
                     </form>

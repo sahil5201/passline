@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ATS result</title>
+    <style>
+        :root {
+            --bg: transparent;
+            --card: #ffffff;
+            --border: #e2e7f0;
+            --ink: #0f1a33;
+            --muted: #5b6785;
+            --track: #e2e7f0;
+            --bar: #1a9e6e;
+            --accent: #2f5bff;
+            --warn-bg: #fff1e0;
+            --warn-ink: #9a5200;
+            --good-bg: #e0f6ec;
+            --good-ink: #0d6b49;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --card: #121a30;
+                --border: #242e4a;
+                --ink: #eef2fb;
+                --muted: #9aa6c4;
+                --track: #242e4a;
+                --bar: #34d399;
+                --accent: #8fb0ff;
+                --warn-bg: #3a2a12;
+                --warn-ink: #ffc27a;
+                --good-bg: #123a2c;
+                --good-ink: #7be3b8;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --card: #121a30;
+            --border: #242e4a;
+            --ink: #eef2fb;
+            --muted: #9aa6c4;
+            --track: #242e4a;
+            --bar: #34d399;
+            --accent: #8fb0ff;
+            --warn-bg: #3a2a12;
+            --warn-ink: #ffc27a;
+            --good-bg: #123a2c;
+            --good-ink: #7be3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            background: var(--bg);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: var(--ink);
+            padding: 8px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            max-width: 560px;
+        }
+
+        .head {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ring {
+            position: relative;
+            width: 84px;
+            height: 84px;
+            flex: none;
+        }
+
+        .ring svg {
+            transform: rotate(-90deg);
+            display: block;
+        }
+
+        .ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .ring .track {
+            stroke: var(--track);
+        }
+
+        .ring .bar {
+            stroke: var(--bar);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s ease;
+        }
+
+        .score {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .headline {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .count {
+            display: block;
+            margin-top: 2px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .section {
+            margin-top: 14px;
+        }
+
+        .label {
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 13px;
+        }
+
+        .chip.warn {
+            background: var(--warn-bg);
+            color: var(--warn-ink);
+        }
+
+        .chip.good {
+            background: var(--good-bg);
+            color: var(--good-ink);
+        }
+
+        .issues {
+            margin-top: 14px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .issue {
+            margin: 0;
+            padding-left: 12px;
+            border-left: 3px solid var(--accent);
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .issue b {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .empty {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .fb {
+            display: grid;
+            gap: 8px;
+        }
+
+        .fb p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .fb b {
+            color: var(--ink);
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .changes {
+            display: grid;
+            gap: 12px;
+        }
+
+        .change {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .ch-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .blk {
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            border-left: 4px solid;
+            overflow-wrap: anywhere;
+        }
+
+        .blk .tag {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .blk.orig {
+            background: var(--warn-bg);
+            color: var(--warn-ink);
+            border-color: var(--warn-ink);
+        }
+
+        .blk.sugg {
+            background: var(--good-bg);
+            color: var(--good-ink);
+            border-color: var(--good-ink);
+        }
+
+        .why {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .why b {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card" id="card">
+        <div class="head">
+            <div class="ring" aria-hidden="true">
+                <svg width="84" height="84" viewBox="0 0 84 84">
+                    <circle class="track" cx="42" cy="42" r="36"></circle>
+                    <circle class="bar" id="bar" cx="42" cy="42" r="36"></circle>
+                </svg>
+                <span class="score" id="score">-</span>
+            </div>
+            <div>
+                <strong class="headline" id="headline">Waiting for result…</strong>
+                <small class="count" id="count"></small>
+            </div>
+        </div>
+
+        <div class="section" id="missing-section" hidden>
+            <div class="label">Missing from your resume</div>
+            <div class="chips" id="missing"></div>
+        </div>
+
+        <div class="section" id="found-section" hidden>
+            <div class="label">Found</div>
+            <div class="chips" id="found"></div>
+        </div>
+
+        <div class="issues" id="issues" hidden></div>
+
+        <div class="section" id="feedback-section" hidden>
+            <div class="label">Section feedback</div>
+            <div class="fb" id="feedback"></div>
+        </div>
+
+        <div class="section" id="result-section">
+            <div class="label">
+                For the details result click and view from dashboard.
+                <a href="http://localhost:3000/jobs/870c2950-679a-4042-8fd6-161c16f47282" target="_blank">View
+                    result</a>
+            </div>
+        </div>
+
+        <!--<div class="section" id="changes-section" hidden>
+      <div class="label">Suggested changes</div>
+      <div class="changes" id="changes"></div>
+    </div> -->
+    </div>
+
+    <script>
+        (function () {
+            var C = 2 * Math.PI * 36;
+            var $ = function (id) { return document.getElementById(id); };
+            var bar = $("bar");
+            bar.style.strokeDasharray = String(C);
+            bar.style.strokeDashoffset = String(C);
+
+            function chips(el, items, cls) {
+                el.textContent = "";
+                items.forEach(function (k) {
+                    var s = document.createElement("span");
+                    s.className = "chip " + cls;
+                    s.textContent = String(k); // textContent: model output is never parsed as HTML
+                    el.appendChild(s);
+                });
+            }
+
+            function headlineFor(score) {
+                if (score >= 85) return "Strong match";
+                if (score >= 70) return "Good match, a few gaps to close";
+                if (score >= 50) return "Partial match, needs work";
+                return "Weak match";
+            }
+
+            function toList(v) {
+                if (Array.isArray(v)) return v;
+                return v ? [v] : [];
+            }
+
+            function render(d) {
+                if (!d || typeof d !== "object") return;
+
+                var score = Math.max(0, Math.min(100, Number(d.score) || 0));
+                $("score").textContent = String(Math.round(score));
+                bar.style.strokeDashoffset = String(C * (1 - score / 100));
+                $("headline").textContent = d.headline || headlineFor(score);
+                var job_id = String(d.job_id)
+                var found = toList(d.matched_keywords || d.found_keywords);
+                var missing = toList(d.missing_keywords);
+                var foundN = d.keywords_found_count != null ? d.keywords_found_count : found.length;
+                var reqN = d.keywords_required_count != null ? d.keywords_required_count : found.length + missing.length;
+                $("count").textContent = reqN
+                    ? foundN + " of " + reqN + " required keywords found"
+                    : "";
+
+                chips($("missing"), missing, "warn");
+                $("missing-section").hidden = missing.length === 0;
+                chips($("found"), found, "good");
+                $("found-section").hidden = found.length === 0;
+
+                function txt(v) {
+                    if (typeof v === "string") return v;
+                    if (v && typeof v === "object") {
+                        return v.suggestion || v.suggested_rewrite || v.description || v.text || v.message || JSON.stringify(v);
+                    }
+                    return String(v);
+                }
+
+                var issues = toList(d.formatting_issues || d.parsing_issues);
+                var box = $("issues");
+                box.textContent = "";
+                issues.forEach(function (text) {
+                    var p = document.createElement("p");
+                    p.className = "issue";
+                    var b = document.createElement("b");
+                    b.textContent = "Formatting issue: ";
+                    p.appendChild(b);
+                    p.appendChild(document.createTextNode(txt(text)));
+                    box.appendChild(p);
+                });
+                box.hidden = issues.length === 0;
+
+                var fb = $("feedback");
+                fb.textContent = "";
+                var sf = d.section_feedback && typeof d.section_feedback === "object" ? d.section_feedback : {};
+                var keys = Object.keys(sf);
+                keys.forEach(function (k) {
+                    var p = document.createElement("p");
+                    var b = document.createElement("b");
+                    b.textContent = k.replace(/_/g, " ") + ": ";
+                    p.appendChild(b);
+                    p.appendChild(document.createTextNode(txt(sf[k])));
+                    fb.appendChild(p);
+                });
+                $("feedback-section").hidden = keys.length === 0;
+
+                function el(tag, cls, text) {
+                    var n = document.createElement(tag);
+                    if (cls) n.className = cls;
+                    if (text != null) n.textContent = text;
+                    return n;
+                }
+                function block(kind, label, text) {
+                    var b = el("div", "blk " + kind);
+                    b.appendChild(el("span", "tag", label));
+                    b.appendChild(document.createTextNode(text));
+                    return b;
+                }
+
+                var ch = $("changes");
+                ch.textContent = "";
+                var changes = toList(d.suggested_changes);
+                changes.forEach(function (c) {
+                    var box = el("div", "change");
+                    if (c && typeof c === "object") {
+                        if (c.section) box.appendChild(el("div", "ch-title", String(c.section)));
+                        if (c.original) box.appendChild(block("orig", "Original", String(c.original)));
+                        var sug = c.suggested || c.suggested_rewrite || c.suggestion;
+                        if (sug) box.appendChild(block("sugg", "Suggested", String(sug)));
+                        if (c.rationale) {
+                            var why = el("div", "why");
+                            why.appendChild(el("b", null, "Why: "));
+                            why.appendChild(document.createTextNode(String(c.rationale)));
+                            box.appendChild(why);
+                        }
+                    } else {
+                        box.appendChild(block("sugg", "Suggested", txt(c)));
+                    }
+                    ch.appendChild(box);
+                });
+                $("changes-section").hidden = changes.length === 0;
+
+                reportSize();
+            }
+
+            // ---- minimal MCP Apps (SEP-1865) host bridge over postMessage ----
+            var nextId = 1;
+            var pending = {};
+
+            function send(msg) {
+                msg.jsonrpc = "2.0";
+                window.parent.postMessage(msg, "*");
+            }
+            function request(method, params) {
+                return new Promise(function (resolve, reject) {
+                    var id = nextId++;
+                    pending[id] = { resolve: resolve, reject: reject };
+                    send({ id: id, method: method, params: params });
+                });
+            }
+            function notify(method, params) {
+                send({ method: method, params: params || {} });
+            }
+
+            function applyTheme(ctx) {
+                if (ctx && (ctx.theme === "dark" || ctx.theme === "light")) {
+                    document.documentElement.setAttribute("data-theme", ctx.theme);
+                }
+            }
+
+            function reportSize() {
+                var h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+                notify("ui/notifications/size-changed", { height: h });
+            }
+
+            window.addEventListener("message", function (e) {
+                if (e.source !== window.parent) return;
+                var m = e.data;
+                if (!m || m.jsonrpc !== "2.0") return;
+
+                // responses to our requests
+                if (m.id != null && !m.method && pending[m.id]) {
+                    var p = pending[m.id];
+                    delete pending[m.id];
+                    if (m.error) p.reject(m.error); else p.resolve(m.result);
+                    return;
+                }
+
+                if (m.method === "ui/notifications/tool-result") {
+                    var r = m.params || {};
+                    var data = r.structuredContent;
+                    if (!data && Array.isArray(r.content)) {
+                        // fallback: JSON in a text block
+                        for (var i = 0; i < r.content.length; i++) {
+                            if (r.content[i].type === "text") {
+                                try { data = JSON.parse(r.content[i].text); break; } catch (_) { }
+                            }
+                        }
+                    }
+                    render(data);
+                } else if (m.method === "ui/notifications/host-context-changed") {
+                    applyTheme(m.params);
+                } else if (m.method === "ui/resource-teardown" && m.id != null) {
+                    send({ id: m.id, result: {} });
+                } else if (m.method === "ping" && m.id != null) {
+                    send({ id: m.id, result: {} });
+                }
+            });
+
+            request("ui/initialize", {
+                appInfo: { name: "ats-result", version: "1.0.0" },
+                appCapabilities: {},
+                protocolVersion: "2025-11-21"
+            }).then(function (res) {
+                applyTheme(res && res.hostContext);
+                notify("ui/notifications/initialized");
+                reportSize();
+            }).catch(function () { /* not in a host: page just shows the empty state */ });
+
+            if (typeof ResizeObserver !== "undefined") {
+                new ResizeObserver(reportSize).observe(document.body);
+            }
+
+            // local preview: open the file directly in a browser to see sample data
+            if (window.parent === window) {
+                render({
+                    score: 78,
+                    headline: "Good match, a few gaps to close",
+                    missing_keywords: ["Kubernetes", "gRPC", "Terraform"],
+                    matched_keywords: ["Go", "PostgreSQL", "AWS", "CI/CD"],
+                    section_feedback: { skills: "Emphasize Jest and Tailwind CSS explicitly." },
+                    formatting_issues: ["Your Skills section uses two columns, which many ATS read out of order. Switch to a single list."],
+                    suggested_changes: [{
+                        section: "Summary",
+                        original: "Senior Full-Stack Engineer with 6+ years of experience building production-grade software across financial platforms...",
+                        suggested: "Senior Software Engineer with 6+ years of experience building React and TypeScript web applications, including fintech platforms.",
+                        rationale: "Mirrors the JD's React/TypeScript language and shifts the emphasis to frontend, using only skills already in the resume."
+                    }]
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

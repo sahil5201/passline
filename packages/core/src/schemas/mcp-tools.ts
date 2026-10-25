@@ -95,6 +95,11 @@ export const saveAtsResultOutputSchema = z.object({
   resume_id: uuidSchema,
   score: z.number().min(0).max(100),
   status: z.literal("analyzed"),
+  matched_keywords: z.array(z.string()),
+  missing_keywords: z.array(z.string()),
+  section_feedback: z.record(z.string(), z.string()),
+  formatting_issues: z.array(z.string()),
+  suggested_changes: z.array(z.any()), // swap for your real shape
 })
 
 /** list_pending_jobs */

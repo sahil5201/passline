@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import { requireUser } from "@/lib/session"
 import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
 
 /**
  * Phase 5 polish: OAuth consent / connector guidance.
@@ -23,7 +24,7 @@ export default async function OAuthSettingsPage() {
     "http://localhost:8001"
 
   return (
-    <AppShell title="MCP OAuth" user={toNavUser(user)}>
+    <Fragment>
       <Button variant="outline" size="sm" render={<Link href="/settings" />}>
         ← Tokens
       </Button>
@@ -48,6 +49,6 @@ export default async function OAuthSettingsPage() {
           </p>
         </CardContent>
       </Card>
-    </AppShell>
+    </Fragment>
   )
 }

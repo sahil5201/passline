@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { signIn } from "@/app/actions/auth"
+import { PasswordInput } from "./password-input"
 
 export function LoginForm({
   className,
@@ -31,8 +32,8 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle>Sign in to Passline</CardTitle>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl" >Sign in to Passline</CardTitle>
           <CardDescription>
             Manage resumes, jobs, and MCP API tokens.
           </CardDescription>
@@ -68,7 +69,7 @@ export function LoginForm({
                     Forgot your password?
                   </Link>
                 </div>
-                <Input
+                <PasswordInput
                   id="password"
                   name="password"
                   type="password"
@@ -76,16 +77,17 @@ export function LoginForm({
                   autoComplete="current-password"
                 />
               </Field>
+
               <Field>
                 <Button type="submit" className="w-full">
                   Sign in
                 </Button>
-                {/* <FieldDescription className="text-center">
+                <FieldDescription className="text-center">
                   Don&apos;t have an account?{" "}
                   <Link href="/signup" className="underline-offset-4 hover:underline">
                     Sign up
                   </Link>
-                </FieldDescription> */}
+                </FieldDescription>
               </Field>
             </FieldGroup>
           </form>

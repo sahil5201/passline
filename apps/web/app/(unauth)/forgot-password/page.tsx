@@ -1,5 +1,10 @@
 import { ForgotPassword } from "@/components/forgot-password";
+// Forgot your password?
+import { Metadata } from "next"
 
+export const metadata: Metadata = {
+  title: "Forgot your password? | Passline",
+};
 export default async function ForgotPasswordPage({
     searchParams,
 }: {

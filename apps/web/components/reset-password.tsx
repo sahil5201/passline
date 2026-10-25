@@ -5,6 +5,7 @@ import { Field, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { updatePassword } from '@/app/actions/auth'
+import { PasswordInput } from './password-input'
 
 function ResetPassword({
     className,
@@ -34,28 +35,28 @@ function ResetPassword({
                         <p className="mb-4 text-sm text-muted-foreground">{message}</p>
                     ) : null}
                     <form
-                    action={updatePassword}
+                        action={updatePassword}
                     >
                         <input type="hidden" name="next" value={next} />
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="password">password</FieldLabel>
-                                <Input
-                                    id="password"
+                                <PasswordInput
+                                    id="new-password"
                                     name="password"
                                     type="password"
                                     required
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                 />
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
-                                <Input
-                                    id="password"
+                                <PasswordInput
+                                    id="confirm-password"
                                     name="confirmPassword"
                                     type="password"
                                     required
-                                    autoComplete="current-password"
+                                    autoComplete="confirm-password"
                                 />
                             </Field>
                             <Field>

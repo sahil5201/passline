@@ -4,7 +4,6 @@ import {
   JobService,
   ResumeService,
 } from "@passline/core"
-import { AppShell } from "@/components/app-shell"
 import { ScoreBadge } from "@/components/score-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -16,8 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { requireUser } from "@/lib/session"
-import { toNavUser } from "@/lib/user-display"
 import { cn } from "cn"
+import { Fragment } from "react/jsx-runtime"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function DashboardPage() {
   const { supabase, user } = await requireUser()
@@ -27,7 +31,7 @@ export default async function DashboardPage() {
   const active = resumes.find((r) => r.is_active)
 
   return (
-    <AppShell title="Dashboard" user={toNavUser(user)}>
+    <Fragment>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Resumes" value={String(resumes.length)} hint={active ? `Active: ${active.label}` : "No active resume"} />
         <StatCard title="Jobs" value={String(insights.total_jobs)} hint={`${insights.queued_jobs} queued · ${insights.analyzed_jobs} analyzed`} />
@@ -144,7 +148,7 @@ export default async function DashboardPage() {
           <Badge variant="secondary">{jobs.filter((j) => j.status === "queued").length} in queue</Badge>
         ) : null}
       </div>
-    </AppShell>
+    </Fragment>
   )
 }
 

@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { requireUser } from "@/lib/session"
 import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
+import { AtsResultCard } from "../(components)/ats-result-card"
 
 export default async function JobDetailPage({
   params,
@@ -56,11 +58,11 @@ export default async function JobDetailPage({
 
   const suggested = Array.isArray(latest?.suggested_changes)
     ? (latest!.suggested_changes as Array<{
-        section?: string
-        suggested?: string
-        rationale?: string
-        original?: string | null
-      }>)
+      section?: string
+      suggested?: string
+      rationale?: string
+      original?: string | null
+    }>)
     : []
   const missing = Array.isArray(latest?.missing_keywords)
     ? (latest!.missing_keywords as string[])
@@ -73,7 +75,7 @@ export default async function JobDetailPage({
     : []
 
   return (
-    <AppShell title={job.title} user={toNavUser(user)}>
+    <Fragment>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" render={<Link href="/jobs" />}>
           ← Jobs
@@ -101,60 +103,61 @@ export default async function JobDetailPage({
       </div>
 
       {latest ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Latest ATS result</CardTitle>
-            <CardDescription>
-              Rubric {latest.rubric_version}
-              {latest.model_used ? ` · Model ${latest.model_used}` : ""}
-              {" · "}
-              {new Date(latest.created_at).toLocaleString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div>
-              <p className="mb-1 font-medium">Missing keywords</p>
-              <p className="text-muted-foreground">
-                {missing.length ? missing.join(", ") : "None listed"}
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 font-medium">Matched keywords</p>
-              <p className="text-muted-foreground">
-                {matched.length ? matched.join(", ") : "None listed"}
-              </p>
-            </div>
-            {formatting.length ? (
-              <div>
-                <p className="mb-1 font-medium">Formatting issues</p>
-                <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                  {formatting.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {suggested.length ? (
-              <div>
-                <p className="mb-2 font-medium">Suggested changes</p>
-                <ul className="space-y-3">
-                  {suggested.map((s, i) => (
-                    <li key={i} className="rounded-lg border p-3">
-                      <p className="font-medium">{s.section ?? "Section"}</p>
-                      {s.original ? (
-                        <p className="mt-1 text-muted-foreground line-through">{s.original}</p>
-                      ) : null}
-                      <p className="mt-1">{s.suggested}</p>
-                      {s.rationale ? (
-                        <p className="mt-1 text-xs text-muted-foreground">{s.rationale}</p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
+        <AtsResultCard latest={latest} />
+        // <Card>
+        //   <CardHeader>
+        //     <CardTitle className="text-base">Latest ATS result</CardTitle>
+        //     <CardDescription>
+        //       Rubric {latest.rubric_version}
+        //       {latest.model_used ? ` · Model ${latest.model_used}` : ""}
+        //       {" · "}
+        //       {new Date(latest.created_at).toLocaleString()}
+        //     </CardDescription>
+        //   </CardHeader>
+        //   <CardContent className="space-y-4 text-sm">
+        //     <div>
+        //       <p className="mb-1 font-medium">Missing keywords</p>
+        //       <p className="text-muted-foreground">
+        //         {missing.length ? missing.join(", ") : "None listed"}
+        //       </p>
+        //     </div>
+        //     <div>
+        //       <p className="mb-1 font-medium">Matched keywords</p>
+        //       <p className="text-muted-foreground">
+        //         {matched.length ? matched.join(", ") : "None listed"}
+        //       </p>
+        //     </div>
+        //     {formatting.length ? (
+        //       <div>
+        //         <p className="mb-1 font-medium">Formatting issues</p>
+        //         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+        //           {formatting.map((item) => (
+        //             <li key={item}>{item}</li>
+        //           ))}
+        //         </ul>
+        //       </div>
+        //     ) : null}
+        //     {suggested.length ? (
+        //       <div>
+        //         <p className="mb-2 font-medium">Suggested changes</p>
+        //         <ul className="space-y-3">
+        //           {suggested.map((s, i) => (
+        //             <li key={i} className="rounded-lg border p-3">
+        //               <p className="font-medium">{s.section ?? "Section"}</p>
+        //               {s.original ? (
+        //                 <p className="mt-1 text-muted-foreground line-through">{s.original}</p>
+        //               ) : null}
+        //               <p className="mt-1">{s.suggested}</p>
+        //               {s.rationale ? (
+        //                 <p className="mt-1 text-xs text-muted-foreground">{s.rationale}</p>
+        //               ) : null}
+        //             </li>
+        //           ))}
+        //         </ul>
+        //       </div>
+        //     ) : null}
+        //   </CardContent>
+        // </Card>
       ) : (
         <Card>
           <CardHeader>
@@ -274,6 +277,6 @@ export default async function JobDetailPage({
           </form>
         </CardContent>
       </Card>
-    </AppShell>
+    </Fragment>
   )
 }

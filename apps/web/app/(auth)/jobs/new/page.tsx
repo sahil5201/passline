@@ -1,20 +1,19 @@
 import Link from "next/link"
 import { LIMITS } from "@passline/core"
 import { createJobAction } from "@/app/actions/jobs"
-import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { requireUser } from "@/lib/session"
-import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
 
 export default async function NewJobPage() {
   const { user } = await requireUser()
   const today = new Date().toISOString().slice(0, 10)
 
   return (
-    <AppShell title="Add job" user={toNavUser(user)}>
+    <Fragment>
       <div>
         <Button variant="outline" size="sm" render={<Link href="/jobs" />}>
           ← Back
@@ -65,6 +64,6 @@ export default async function NewJobPage() {
         </label>
         <Button type="submit">Save job</Button>
       </form>
-    </AppShell>
+    </Fragment>
   )
 }

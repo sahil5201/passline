@@ -6,7 +6,6 @@ import {
   setActiveResumeAction,
   uploadResumeAction,
 } from "@/app/actions/resumes"
-import { AppShell } from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,7 +19,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { requireUser } from "@/lib/session"
-import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Resumes",
+};
+
 
 export default async function ResumesPage() {
   const { supabase, user } = await requireUser()
@@ -28,7 +33,7 @@ export default async function ResumesPage() {
   const atLimit = resumes.length >= LIMITS.maxResumeVersionsPerUser
 
   return (
-    <AppShell title="Resumes" user={toNavUser(user)}>
+    <Fragment>
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-3">
           {resumes.length === 0 ? (
@@ -145,6 +150,6 @@ export default async function ResumesPage() {
           </Card>
         </div>
       </div>
-    </AppShell>
+    </Fragment>
   )
 }

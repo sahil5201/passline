@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { requireUser } from "@/lib/session"
 import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
 
 export default async function ResumeDetailPage({
   params,
@@ -27,7 +28,7 @@ export default async function ResumeDetailPage({
   }
 
   return (
-    <AppShell title={resume.label} user={toNavUser(user)}>
+    <Fragment>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" render={<Link href="/resumes" />}>
           ← Back
@@ -73,6 +74,6 @@ export default async function ResumeDetailPage({
         </div>
         <Button type="submit">Save</Button>
       </form>
-    </AppShell>
+    </Fragment>
   )
 }

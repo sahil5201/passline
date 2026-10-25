@@ -4,7 +4,6 @@ import {
   JobService,
   ResultsService,
 } from "@passline/core"
-import { AppShell } from "@/components/app-shell"
 import { ScoreBadge } from "@/components/score-badge"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -23,7 +22,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { requireUser } from "@/lib/session"
-import { toNavUser } from "@/lib/user-display"
+import { Fragment } from "react/jsx-runtime"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Tracker",
+};
 
 export default async function TrackerPage() {
   const { supabase, user } = await requireUser()
@@ -46,7 +50,7 @@ export default async function TrackerPage() {
   }
 
   return (
-    <AppShell title="Application tracker" user={toNavUser(user)}>
+    <Fragment>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Insight
           title="ATS-optimized response rate"
@@ -164,7 +168,7 @@ export default async function TrackerPage() {
           </TableBody>
         </Table>
       </div>
-    </AppShell>
+    </Fragment>
   )
 }
 

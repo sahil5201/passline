@@ -38,8 +38,14 @@ function ThemeHotkey() {
   const { resolvedTheme, setTheme } = useTheme()
 
   React.useEffect(() => {
+
     function onKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented || event.repeat) {
+        return
+      }
+
+      // Guard against missing or invalid key values
+      if (typeof event.key !== "string") {
         return
       }
 
@@ -57,6 +63,7 @@ function ThemeHotkey() {
 
       setTheme(resolvedTheme === "dark" ? "light" : "dark")
     }
+
 
     window.addEventListener("keydown", onKeyDown)
 
