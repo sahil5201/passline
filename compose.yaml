@@ -3,10 +3,7 @@ services:
     build:
       context: ./apps/client
       dockerfile: Dockerfile
-      target: production
     container_name: passline-client
-    profiles:
-      - production
     ports:
       - "8190:80"
     restart: unless-stopped
