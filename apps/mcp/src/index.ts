@@ -11,7 +11,7 @@ import { cors } from 'hono/cors'
 import { supabaseOAuthAuth } from "./auth/supabase-oauth"
 
 const app = new Hono<{ Variables: AuthVariables }>()
-const PUBLIC_URL = (Bun.env.PUBLIC_URL ?? "https://mcp.jsdevsahil.xyz").replace(/\/$/, "")
+const PUBLIC_URL = (Bun.env.MCP_PUBLIC_URL ?? "https://mcp.jsdevsahil.xyz").replace(/\/$/, "")
 const customLogger = (
   message: string,
   ...rest: string[]
@@ -35,7 +35,12 @@ app.use('*', async (c, next) => {
 
   await next()
 })
-app.use('*', cors())
+// app.use('*', cors())
+app.use("*", cors({
+  origin: "*",
+  allowHeaders: ["Authorization", "Content-Type", "Mcp-Session-Id", "Mcp-Protocol-Version"],
+  exposeHeaders: ["WWW-Authenticate", "Mcp-Session-Id"],
+}))
 
 app.get("/health", (c) =>
   c.json({
@@ -51,68 +56,33 @@ app.get("/health", (c) =>
 const SUPABASE_ISSUER =
   `${loadEnv().supabaseUrl.replace(/\/$/, "")}/auth/v1`
 
-app.get("/.well-known/oauth-protected-resource", (c) => {
-  return c.json({
-    resource: `${PUBLIC_URL}/mcp`,
-    authorization_servers: [SUPABASE_ISSUER],
-    bearer_methods_supported: ["header"],
-    resource_documentation: `${PUBLIC_URL}/health`,
-  })
-})
-
-app.get("/.well-known/oauth-protected-resource/mcp", (c) => {
-  return c.json({
-    resource: `${PUBLIC_URL}/mcp`,
-    authorization_servers: [SUPABASE_ISSUER],
-    bearer_methods_supported: ["header"],
-  })
-})
-
-
-/**
- * OAuth 2.1 protected resource metadata (MCP clients discover this).
- * Full consent UI lives in the Next.js app later; metadata enables connector discovery.
- */
-// v1
 // app.get("/.well-known/oauth-protected-resource", (c) => {
-//   const base = new URL(PUBLIC_URL)
-//   const resource = `${PUBLIC_URL}/mcp`
-//   console.log('origin', base.origin)
-//   console.log('resource', resource)
-
-//   let supabaseAuth: string | undefined
-//   try {
-//     supabaseAuth = `${loadEnv().supabaseUrl.replace(/\/$/, "")}/auth/v1`
-//   } catch {
-//     supabaseAuth = undefined
-//   }
-
-//   return c.json({
-//     resource: resource,
-//     authorization_servers: supabaseAuth ? [supabaseAuth] : [],
-//     scopes_supported: ["openid", "profile", "email"],
-//     bearer_methods_supported: ["header"],
-//     resource_documentation: `${base.origin}/health`,
-//   })
-// })
-
-// app.get("/.well-known/oauth-protected-resource/mcp", (c) => {
-//   const url = new URL(`${PUBLIC_URL}/mcp`)
-//   url.pathname = "/.well-known/oauth-protected-resource"
-//   return c.redirect(url.toString(), 307)
-// })
-
-// v1
-// app.get("/.well-known/oauth-protected-resource/mcp", (c) => {
-//   // return JSON directly instead of redirecting
-//   const supabaseAuth = `${loadEnv().supabaseUrl.replace(/\/$/, "")}/auth/v1`
 //   return c.json({
 //     resource: `${PUBLIC_URL}/mcp`,
-//     authorization_servers: [supabaseAuth],
-//     scopes_supported: ["openid", "profile", "email"],
+//     authorization_servers: [SUPABASE_ISSUER],
+//     bearer_methods_supported: ["header"],
+//     resource_documentation: `${PUBLIC_URL}/health`,
+//   })
+// })
+
+// app.get("/.well-known/oauth-protected-resource/mcp", (c) => {
+//   return c.json({
+//     resource: `${PUBLIC_URL}/mcp`,
+//     authorization_servers: [SUPABASE_ISSUER],
 //     bearer_methods_supported: ["header"],
 //   })
 // })
+
+const metadata = {
+  resource: `${PUBLIC_URL}/mcp`,
+  authorization_servers: [SUPABASE_ISSUER],
+  scopes_supported: ["openid", "email", "profile"],
+  bearer_methods_supported: ["header"],
+  resource_documentation: `${PUBLIC_URL}/health`,
+}
+
+app.get("/.well-known/oauth-protected-resource", (c) => c.json(metadata))
+app.get("/.well-known/oauth-protected-resource/mcp", (c) => c.json(metadata))
 
 /**
  * Stateless MCP endpoint:
