@@ -1,0 +1,425 @@
+---
+/**
+ * ConnectClaudeGuide.astro
+ *
+ * Guide page: "How to connect PassLine ATS MCP to Claude".
+ * Same Tailwind + light/dark conventions as PasslineLanding.astro.
+ *
+ * Usage (e.g. src/pages/docs/connect-claude.astro):
+ *   ---
+ *   import Layout from "../../layouts/Layout.astro";
+ *   import ConnectClaudeGuide from "../../components/ConnectClaudeGuide.astro";
+ *   ---
+ *   <Layout title="Connect PassLine to Claude">
+ *     <ConnectClaudeGuide gifSrc="/images/connect-passline.gif" />
+ *   </Layout>
+ *
+ * GIF: put your file in /public (e.g. /public/images/connect-passline.gif) and pass its
+ * URL as `gifSrc`. Until you do, a placeholder is shown in its place.
+ *
+ * Dark mode uses Tailwind's `dark:` variant (v4: media by default, or add
+ * `@custom-variant dark (&:where(.dark, .dark *));` for class-based; v3: darkMode).
+ */
+interface Props {
+  gifSrc?: string;
+  gifAlt?: string;
+  gifCaption?: string;
+  gifWidth?: number;
+  gifHeight?: number;
+  mcpUrl?: string;
+  backHref?: string;
+  backLabel?: string;
+  signupHref?: string;
+  loadFonts?: boolean;
+}
+
+const {
+  gifSrc,
+  gifAlt = "Screen recording showing how to add the PassLine connector in Claude, sign in, and approve access.",
+  gifCaption = "The whole setup in under a minute.",
+  gifWidth = 1280,
+  gifHeight = 720,
+  mcpUrl = "https://passline-mcp.apps.askz.in/mcp",
+  backHref = "/docs",
+  backLabel = "Docs",
+  signupHref = "/signup",
+  loadFonts = true,
+} = Astro.props;
+
+/* ---------- shared class tokens ---------- */
+const display = "font-['Bricolage_Grotesque','Segoe_UI',system-ui,sans-serif]";
+const body = "font-['Instrument_Sans','Segoe_UI',system-ui,sans-serif]";
+const mono = "font-[ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]";
+const ink = "text-[#151B2E] dark:text-[#E8ECF7]";
+const muted = "text-[#5B657A] dark:text-[#9AA4BC]";
+const border = "border-[#E2E7F0] dark:border-[#242E4A]";
+const surface = "bg-white dark:bg-[#131A2E]";
+const page = "bg-[#F6F8FB] dark:bg-[#0B1020]";
+const focus =
+  "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#2F5BFF] dark:focus-visible:outline-[#8FB0FF] focus-visible:rounded-md";
+const btn =
+  "inline-block rounded-xl border border-transparent px-[22px] py-[15px] text-base font-semibold leading-none no-underline cursor-pointer transition-colors";
+const btnPrimary = `${btn} bg-[#2F5BFF] text-white hover:bg-[#2049e0] dark:bg-[#4F74FF] dark:hover:bg-[#6785FF]`;
+const h2 = `${display} text-[length:clamp(26px,3vw,34px)] font-bold leading-[1.1] tracking-[-0.02em]`;
+const wrap = "mx-auto max-w-[1120px] px-6";
+
+const codeCls = `rounded-md bg-[#E8EEFF] px-1.5 py-0.5 text-[0.88em] text-[#1c3bb3] dark:bg-[#2F5BFF]/20 dark:text-[#B5C8FF] ${mono}`;
+const b = (t: string) => `<strong class="font-semibold ${ink}">${t}</strong>`;
+const code = (t: string) => `<code class="${codeCls}">${t}</code>`;
+
+type Callout = { tone: "note" | "warn"; title: string; text: string };
+type Step = { title: string; intro?: string; items: string[]; callout?: Callout; tools?: string[] };
+
+const steps: Step[] = [
+  {
+    title: "Open Claude Settings",
+    items: [
+      "Open your Claude client in a web browser.",
+      "Click your profile menu in the bottom-left corner.",
+      `Select ${b("Settings")}.`,
+      `Under the ${b("Customize")} section, select ${b("Connectors")}.`,
+    ],
+  },
+  {
+    title: "Add a custom connector",
+    items: [
+      `In the Connectors section, click ${b("Add")}.`,
+      `Select ${b("Add custom connector")}.`,
+      `Enter ${b("Name")}: ${code("PassLine")} and ${b("MCP Server URL")}: ${code(mcpUrl)}.`,
+      "Verify that the server URL is entered correctly.",
+      `Click ${b("Continue")}.`,
+    ],
+  },
+  {
+    title: "Configure authentication",
+    intro: "Claude checks the server and detects its supported sign-in configuration. Use these options:",
+    items: [
+      `${b("Authentication")}: Sign in now`,
+      `${b("OAuth client")}: Register automatically`,
+      `Click ${b("Add")} to finish adding the connector.`,
+    ],
+    callout: {
+      tone: "note",
+      title: "Different options?",
+      text: "If Claude shows different authentication options, follow the ones it detected for the PassLine server rather than changing them unnecessarily.",
+    },
+  },
+  {
+    title: "Connect to PassLine",
+    items: [
+      "Open the PassLine connector in Claude's Connectors settings.",
+      `Click ${b("Connect")}.`,
+      "Claude redirects you to the PassLine sign-in page.",
+    ],
+  },
+  {
+    title: "Sign in or create a PassLine account",
+    items: [
+      "Enter your registered email address.",
+      "Enter your password.",
+      `Click ${b("Sign in")}.`,
+    ],
+    callout: {
+      tone: "note",
+      title: "No account yet?",
+      text: "Select Sign up and complete registration before continuing.",
+    },
+  },
+  {
+    title: "Authorize Claude",
+    intro: "After signing in, PassLine shows an authorization screen for Claude.",
+    items: [
+      "Review the application name and requested permissions.",
+      "Confirm that you started this connection and are comfortable granting the requested access.",
+      `Click ${b("Approve access")}.`,
+    ],
+    callout: {
+      tone: "warn",
+      title: "Only approve what you recognize",
+      text: "If anything looks unfamiliar, do not approve the request until you've verified it.",
+    },
+  },
+  {
+    title: "Verify the connection",
+    intro: "Once authorization is complete you're redirected back to Claude.",
+    items: [
+      `Open ${b("Settings → Connectors")}.`,
+      "Select the PassLine connector.",
+      "Confirm that it shows as connected.",
+      "Review the available tools and their permission settings.",
+    ],
+    tools: [
+      "Check ATS compatibility",
+      "Get resume",
+      "List pending jobs",
+      "List resumes",
+      "Run bulk ATS check",
+      "Set active resume",
+      "Update application status",
+      "Save ATS result",
+    ],
+    callout: {
+      tone: "note",
+      title: "Your list may differ",
+      text: "The tools shown in your account can vary with server configuration and your access permissions.",
+    },
+  },
+  {
+    title: "Review tool permissions",
+    intro: "Claude lets you control how each connector tool can be used.",
+    items: [
+      "Open the PassLine connector's settings.",
+      "Review the tools under the tool-permissions section.",
+      "Check the approval setting for each tool category.",
+    ],
+    callout: {
+      tone: "warn",
+      title: "Keep approvals on for write actions",
+      text: "Keep approval requirements enabled where appropriate, especially for tools that modify application data or change application status. Review each action before approving it.",
+    },
+  },
+];
+
+const troubleshooting = [
+  `The MCP server URL is exactly ${code(mcpUrl)}.`,
+  "You signed in with the correct PassLine account.",
+  "You approved the OAuth authorization request.",
+  "The PassLine connector appears as connected in Claude's settings.",
+  "The tools you want to use are available and permitted.",
+];
+
+const calloutStyle = {
+  note: "border-[#2F5BFF] bg-[#E8EEFF] text-[#1c3bb3] dark:border-[#8FB0FF] dark:bg-[#2F5BFF]/15 dark:text-[#B5C8FF]",
+  warn: "border-[#B96F0B] bg-[#FDF1DC] text-[#8A5208] dark:border-[#F5C26B] dark:bg-[#F5A524]/10 dark:text-[#F5C26B]",
+};
+
+const toc = [
+  { id: "demo", label: "Watch the setup" },
+  ...steps.map((s, i) => ({ id: `step-${i + 1}`, label: `${i + 1}. ${s.title}` })),
+  { id: "troubleshooting", label: "Troubleshooting" },
+];
+---
+
+{
+  loadFonts && (
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+    </>
+  )
+}
+
+<div class={`${page} ${ink} ${body} text-[17px] leading-[1.6] antialiased`}>
+  <div class={`${wrap} pb-20 pt-8`}>
+    <!-- Header -->
+    <nav aria-label="Breadcrumb" class={`mb-6 text-sm ${muted}`}>
+      <a href={backHref} class={`no-underline hover:text-[#151B2E] dark:hover:text-white ${focus}`}>{backLabel}</a>
+      <span aria-hidden="true" class="mx-2">/</span>
+      <span aria-current="page">Connect to Claude</span>
+    </nav>
+
+    <header class="mb-12 max-w-[720px]">
+      <p class="mb-3 inline-block rounded-full bg-[#E8EEFF] px-3 py-1 text-[13px] font-semibold text-[#2F5BFF] dark:bg-[#2F5BFF]/20 dark:text-[#9DB8FF]">
+        Setup guide · 8 steps
+      </p>
+      <h1 class={`${display} text-[length:clamp(36px,5vw,56px)] font-bold leading-[1.08] tracking-[-0.02em]`}>
+        How to connect PassLine ATS MCP to Claude
+      </h1>
+      <p class={`mt-5 text-[19px] ${muted}`}>
+        Connect your PassLine account to Claude so you can use the ATS tools directly from your Claude client. You'll add a custom connector, sign in to PassLine, and authorize Claude.
+      </p>
+    </header>
+
+    <div class="grid gap-12 min-[900px]:grid-cols-[230px_minmax(0,1fr)] min-[900px]:gap-14">
+      <!-- Table of contents -->
+      <aside class="min-[900px]:sticky min-[900px]:top-6 min-[900px]:self-start">
+        <nav aria-label="On this page">
+          <p class={`mb-3 text-[13px] font-semibold uppercase tracking-wider ${muted}`}>On this page</p>
+          <ul class="m-0 hidden list-none gap-0.5 p-0 min-[900px]:grid">
+            {toc.map((t) => (
+              <li>
+                <a
+                  href={`#${t.id}`}
+                  class={`block rounded-lg px-3 py-1.5 text-[14.5px] no-underline transition-colors hover:bg-[#E8EEFF] hover:text-[#151B2E] dark:hover:bg-[#2F5BFF]/15 dark:hover:text-white ${muted} ${focus}`}
+                >
+                  {t.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <details class={`min-[900px]:hidden ${surface} rounded-xl border px-4 py-3 ${border}`}>
+            <summary class={`cursor-pointer text-[15px] font-semibold ${focus}`}>Jump to a step</summary>
+            <ul class="m-0 mt-2 grid list-none gap-0.5 p-0">
+              {toc.map((t) => (
+                <li><a href={`#${t.id}`} class={`block py-1.5 text-[14.5px] no-underline ${muted} ${focus}`}>{t.label}</a></li>
+              ))}
+            </ul>
+          </details>
+        </nav>
+      </aside>
+
+      <!-- Content -->
+      <main id="main" class="min-w-0">
+        <!-- GIF demo -->
+        <section id="demo" class="mb-14 scroll-mt-6" aria-labelledby="demo-title">
+          <h2 id="demo-title" class={`${h2} mb-2`}>Watch the setup</h2>
+          <p class={`mb-5 ${muted}`}>Prefer to see it first? Here's the full flow from adding the connector to approving access.</p>
+          <figure class="m-0">
+            <div class={`overflow-hidden rounded-[18px] border ${border} ${surface} shadow-[0_24px_60px_-28px_rgba(21,27,46,0.35)] dark:shadow-[0_24px_60px_-28px_rgba(0,0,0,0.75)]`}>
+              <div class={`flex items-center gap-1.5 border-b px-4 py-3 ${border}`} aria-hidden="true">
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+              </div>
+              {
+                gifSrc ? (
+                  <img
+                    src={gifSrc}
+                    alt={gifAlt}
+                    width={gifWidth}
+                    height={gifHeight}
+                    loading="lazy"
+                    decoding="async"
+                    class="block h-auto w-full"
+                  />
+                ) : (
+                  <div
+                    class={`m-4 grid aspect-video place-items-center rounded-xl border-2 border-dashed p-6 text-center ${border} ${page}`}
+                    role="img"
+                    aria-label="Placeholder for the setup walkthrough GIF"
+                  >
+                    <div>
+                      <svg class={`mx-auto mb-3 ${muted}`} width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="3" />
+                        <circle cx="9" cy="10" r="1.6" />
+                        <path d="M21 16l-5-5-8 8" />
+                      </svg>
+                      <p class="font-semibold">Your walkthrough GIF goes here</p>
+                      <p class={`mt-1 text-sm ${muted}`}>
+                        Save it to <code class={codeCls}>/public/images/connect-passline.gif</code> and pass <code class={codeCls}>gifSrc="/images/connect-passline.gif"</code>.
+                      </p>
+                    </div>
+                  </div>
+                )
+              }
+            </div>
+            <figcaption class={`mt-3 text-sm ${muted}`}>{gifCaption}</figcaption>
+          </figure>
+        </section>
+
+        <!-- Server URL quick copy -->
+        <div class={`mb-14 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 ${border} ${surface}`}>
+          <div class="min-w-0">
+            <p class={`mb-1 text-[13px] font-semibold ${muted}`}>MCP Server URL</p>
+            <code class={`block break-all text-[15px] ${mono}`} id="mcp-url">{mcpUrl}</code>
+          </div>
+          <button
+            type="button"
+            data-copy-target="mcp-url"
+            class={`rounded-xl border px-4 py-2.5 text-[15px] font-semibold transition-colors hover:border-[#c5cdde] dark:hover:border-[#3A4668] ${border} ${page} ${focus}`}
+          >
+            <span data-copy-label>Copy URL</span>
+          </button>
+        </div>
+
+        <!-- Steps -->
+        <ol class="m-0 grid list-none gap-6 p-0">
+          {
+            steps.map((s, i) => (
+              <li id={`step-${i + 1}`} class={`scroll-mt-6 rounded-[18px] border p-6 min-[900px]:p-8 ${border} ${surface}`}>
+                <div class="mb-4 flex items-center gap-3.5">
+                  <span class={`grid h-9 w-9 flex-none place-items-center rounded-full bg-[#151B2E] text-base font-semibold text-white dark:bg-[#E8EEFF] dark:text-[#0B1020] ${display}`} aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <h2 class={`${display} text-2xl font-bold leading-tight tracking-[-0.02em]`}>
+                    <span class="sr-only">Step {i + 1}: </span>{s.title}
+                  </h2>
+                </div>
+
+                {s.intro && <p class={`mb-3 ${muted}`}>{s.intro}</p>}
+
+                <ol class={`m-0 grid list-decimal gap-2 pl-6 marker:font-semibold marker:text-[#2F5BFF] dark:marker:text-[#8FB0FF] ${muted}`}>
+                  {s.items.map((item) => (
+                    <li class="pl-1" set:html={item} />
+                  ))}
+                </ol>
+
+                {s.tools && (
+                  <div class="mt-5">
+                    <p class={`mb-2 text-[13px] font-semibold ${muted}`}>Tools you should see</p>
+                    <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                      {s.tools.map((t) => (
+                        <li class="rounded-full bg-[#E3F5EE] px-2.5 py-[3px] text-[13px] text-[#0F6B49] dark:bg-[#1A9E6E]/20 dark:text-[#6EE7B7]">{t}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {s.callout && (
+                  <div class={`mt-5 rounded-xl border-l-[3px] px-4 py-3 text-[15px] ${calloutStyle[s.callout.tone]}`} role="note">
+                    <strong class="font-semibold">{s.callout.title}.</strong> {s.callout.text}
+                  </div>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+
+        <!-- Done -->
+        <section class="mt-14 rounded-[22px] border border-transparent bg-[#151B2E] px-7 py-10 text-white dark:border-[#242E4A] dark:bg-[#18213B]" aria-labelledby="done-title">
+          <h2 id="done-title" class={`${display} mb-3 text-[length:clamp(26px,3vw,34px)] font-bold leading-[1.1] tracking-[-0.02em]`}>You're all set!</h2>
+          <p class="max-w-[40em] text-[#B7C0D9]">
+            PassLine is now connected to Claude. You can use the available tools to work with your ATS checks and applications, subject to your account permissions and the connector's approval settings.
+          </p>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section id="troubleshooting" class="mt-16 scroll-mt-6" aria-labelledby="ts-title">
+          <h2 id="ts-title" class={`${h2} mb-3`}>Troubleshooting</h2>
+          <p class={`mb-5 ${muted}`}>If the connection doesn't work, check that:</p>
+          <ul class="m-0 grid list-none gap-3 p-0">
+            {
+              troubleshooting.map((t) => (
+                <li class={`relative pl-8 ${muted} before:absolute before:left-0 before:top-[.5em] before:h-2 before:w-[14px] before:-rotate-45 before:border-b-[2.5px] before:border-l-[2.5px] before:border-[#1A9E6E] before:content-[''] dark:before:border-[#34D399]`} set:html={t} />
+              ))
+            }
+          </ul>
+          <p class={`mt-6 ${muted}`}>
+            Still stuck? Disconnect the connector and repeat the setup, making sure the authentication and authorization steps complete.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href={signupHref} class={`${btnPrimary} ${focus}`}>Create a PassLine account</a>
+            <a href={backHref} class={`text-[15px] font-medium no-underline hover:underline ${muted} ${focus}`}>Back to docs</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-target]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const target = document.getElementById(btn.dataset.copyTarget ?? "");
+      const label = btn.querySelector<HTMLElement>("[data-copy-label]");
+      if (!target || !label) return;
+      const original = label.textContent;
+      try {
+        await navigator.clipboard.writeText(target.textContent?.trim() ?? "");
+        label.textContent = "Copied!";
+      } catch {
+        label.textContent = "Press Ctrl/Cmd+C";
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+      setTimeout(() => (label.textContent = original), 2000);
+    });
+  });
+</script>

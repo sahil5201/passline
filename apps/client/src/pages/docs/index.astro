@@ -1,0 +1,15 @@
+---
+// src/components/BlankComponent.astro
+---
+
+<!-- This can be completely empty or have a loading spinner -->
+
+
+<script>
+  // Import Astro's built-in client router function
+  import { navigate } from "astro:transitions/client";
+
+  // Trigger the navigation immediately when the component mounts on the client side
+  // Use "/" to target the homepage
+  navigate("/"); 
+</script>

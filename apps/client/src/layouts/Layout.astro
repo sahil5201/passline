@@ -1,5 +1,11 @@
 ---
 import "../styles/global.css";
+// src/layouts/BaseLayout.astro
+interface Props {
+  title: string;
+}
+// Destructure the title from Astro.props
+const { title } = Astro.props;
 ---
 
 <!doctype html>
@@ -10,7 +16,7 @@ import "../styles/global.css";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>{title ?? `PassLine`}</title>
   </head>
   <body>
     <slot />

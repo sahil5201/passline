@@ -1,0 +1,501 @@
+---
+/**
+ * ConnectChatGPTGuide.astro
+ *
+ * Guide page: "How to connect PassLine ATS MCP to ChatGPT".
+ * Sibling of ConnectClaudeGuide.astro: same Tailwind + light/dark conventions.
+ *
+ * Usage (e.g. src/pages/docs/connect-chatgpt.astro):
+ *   ---
+ *   import Layout from "../../layouts/Layout.astro";
+ *   import ConnectChatGPTGuide from "../../components/ConnectChatGPTGuide.astro";
+ *   ---
+ *   <Layout title="Connect PassLine to ChatGPT">
+ *     <ConnectChatGPTGuide gifSrc="/images/connect-passline-chatgpt.gif" />
+ *   </Layout>
+ *
+ * GIF: put your file in /public and pass its URL as `gifSrc`. Until you do,
+ * a placeholder is shown in its place.
+ *
+ * Dark mode uses Tailwind's `dark:` variant (v4: media by default, or add
+ * `@custom-variant dark (&:where(.dark, .dark *));` for class-based; v3: darkMode).
+ */
+interface Props {
+  gifSrc?: string;
+  gifAlt?: string;
+  gifCaption?: string;
+  gifWidth?: number;
+  gifHeight?: number;
+  mcpUrl?: string;
+  chatgptUrl?: string;
+  backHref?: string;
+  backLabel?: string;
+  signupHref?: string;
+  loadFonts?: boolean;
+}
+
+const {
+  gifSrc,
+  gifAlt = "Screen recording showing how to add the PassLine custom MCP server in ChatGPT, sign in, and authorize access.",
+  gifCaption = "The whole setup, start to finish.",
+  gifWidth = 1280,
+  gifHeight = 720,
+  mcpUrl = "https://passline-mcp.apps.askz.in/mcp",
+  chatgptUrl = "https://chatgpt.com/",
+  backHref = "/docs",
+  backLabel = "Docs",
+  signupHref = "/signup",
+  loadFonts = true,
+} = Astro.props;
+
+/* ---------- shared class tokens ---------- */
+const display = "font-['Bricolage_Grotesque','Segoe_UI',system-ui,sans-serif]";
+const body = "font-['Instrument_Sans','Segoe_UI',system-ui,sans-serif]";
+const mono = "font-[ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]";
+const ink = "text-[#151B2E] dark:text-[#E8ECF7]";
+const muted = "text-[#5B657A] dark:text-[#9AA4BC]";
+const border = "border-[#E2E7F0] dark:border-[#242E4A]";
+const surface = "bg-white dark:bg-[#131A2E]";
+const page = "bg-[#F6F8FB] dark:bg-[#0B1020]";
+const link = "text-[#2F5BFF] underline underline-offset-2 hover:no-underline dark:text-[#8FB0FF]";
+const focus =
+  "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#2F5BFF] dark:focus-visible:outline-[#8FB0FF] focus-visible:rounded-md";
+const btn =
+  "inline-block rounded-xl border border-transparent px-[22px] py-[15px] text-base font-semibold leading-none no-underline cursor-pointer transition-colors";
+const btnPrimary = `${btn} bg-[#2F5BFF] text-white hover:bg-[#2049e0] dark:bg-[#4F74FF] dark:hover:bg-[#6785FF]`;
+const h2 = `${display} text-[length:clamp(26px,3vw,34px)] font-bold leading-[1.1] tracking-[-0.02em]`;
+const wrap = "mx-auto max-w-[1120px] px-6";
+const checkItem = `relative pl-8 before:absolute before:left-0 before:top-[.5em] before:h-2 before:w-[14px] before:-rotate-45 before:border-b-[2.5px] before:border-l-[2.5px] before:border-[#1A9E6E] before:content-[''] dark:before:border-[#34D399]`;
+
+const codeCls = `rounded-md bg-[#E8EEFF] px-1.5 py-0.5 text-[0.88em] text-[#1c3bb3] dark:bg-[#2F5BFF]/20 dark:text-[#B5C8FF] ${mono}`;
+const b = (t: string) => `<strong class="font-semibold ${ink}">${t}</strong>`;
+const code = (t: string) => `<code class="${codeCls}">${t}</code>`;
+const a = (href: string, t: string) =>
+  `<a href="${href}" target="_blank" rel="noopener noreferrer" class="${link}">${t}</a>`;
+
+type Callout = { tone: "note" | "warn"; title: string; text: string };
+type Step = {
+  title: string;
+  intro?: string;
+  items: string[];
+  callout?: Callout;
+  table?: [string, string][];
+  outro?: string;
+};
+
+const steps: Step[] = [
+  {
+    title: "Open ChatGPT Plugins",
+    items: [
+      `Sign in to ${a(chatgptUrl, "ChatGPT")}.`,
+      `Navigate to the ${b("Plugins")} page.`,
+      "Locate the option to add a custom MCP server.",
+    ],
+    callout: {
+      tone: "note",
+      title: "Your screen may look different",
+      text: "ChatGPT's interface and the availability of custom MCP integrations vary by account and workspace.",
+    },
+  },
+  {
+    title: "Add a custom MCP server",
+    items: [
+      "Click the option to add a custom MCP server.",
+      `The ${b("Add custom MCP server")} configuration dialog opens.`,
+      "Optionally, upload an icon for the integration. This isn't required.",
+    ],
+  },
+  {
+    title: "Configure the PassLine connection",
+    intro: "Fill in the configuration fields as follows:",
+    items: [],
+    table: [
+      ["Name", code("PassLine")],
+      ["Description", "Optional: a short description of the integration"],
+      ["Connection type", code("Server URL")],
+      ["Server URL", code(mcpUrl)],
+      ["Authentication", code("OAuth")],
+    ],
+    outro: `Make sure the server URL is entered correctly, including the ${code("/mcp")} path.`,
+  },
+  {
+    title: "Review advanced OAuth settings",
+    items: [
+      `Open ${b("Advanced OAuth settings")}.`,
+      "Review the OAuth settings discovered by ChatGPT.",
+      "If the configuration needs additional information, follow the instructions from your PassLine administrator or integration documentation.",
+      "Return to the main configuration dialog when you're ready.",
+    ],
+    callout: {
+      tone: "note",
+      title: "Usually nothing to enter",
+      text: "If the discovered settings are sufficient, you may not need to enter anything manually.",
+    },
+  },
+  {
+    title: "Confirm the security warning",
+    intro: "Before creating the integration, ChatGPT shows a warning about the risks of connecting custom MCP servers.",
+    items: [
+      "Read the warning carefully.",
+      "Confirm that you trust the PassLine MCP server and understand the access you're granting.",
+      `Select the checkbox labeled ${b("I understand and want to continue")}.`,
+    ],
+    callout: {
+      tone: "warn",
+      title: "Only connect to servers you trust",
+      text: "MCP integrations can expose information you share with them and may be able to perform actions, depending on the tools and permissions available.",
+    },
+  },
+  {
+    title: "Create the PassLine integration",
+    items: [
+      `Click ${b("Create as a plugin")}.`,
+      "Wait for ChatGPT to initialize the connection.",
+      "If prompted, continue to the PassLine sign-in and authorization flow.",
+    ],
+    outro: "The PassLine integration should now be registered in ChatGPT, subject to successful authorization.",
+  },
+  {
+    title: "Sign in to PassLine",
+    items: [
+      "When the authorization page opens, sign in with your PassLine account credentials.",
+      "If you're already signed in, you may go straight to the authorization screen.",
+      "Verify that you're using the correct account and that it has the required ATS permissions.",
+    ],
+  },
+  {
+    title: "Authorize ChatGPT",
+    items: [
+      "Review the access requested by the PassLine integration.",
+      "If the requested access is appropriate, approve the authorization.",
+      "Wait for the OAuth flow to complete and return you to ChatGPT.",
+    ],
+    callout: {
+      tone: "warn",
+      title: "Approve only what you're comfortable granting",
+      text: "This step grants the integration the access named in the authorization request.",
+    },
+  },
+  {
+    title: "Verify the connection",
+    items: [
+      "Return to the ChatGPT Plugins page.",
+      "Locate the PassLine integration.",
+      "Confirm that it appears in the configured integrations list and that the connection completed successfully.",
+      "Open a new chat and check whether the PassLine tools are available to use.",
+    ],
+    callout: {
+      tone: "note",
+      title: "Not active?",
+      text: "If the connection doesn't look active, revisit the authorization flow and check for error messages.",
+    },
+  },
+];
+
+const requirements = [
+  "Access to ChatGPT with support for custom MCP servers.",
+  "A PassLine account and permission to access the relevant ATS data.",
+  "A web browser to complete the OAuth authorization process.",
+];
+
+const troubleshooting: { title: string; items: string[] }[] = [
+  {
+    title: "The server cannot be connected",
+    items: [
+      `Verify the URL: ${code(mcpUrl)}`,
+      "Check that the URL has no extra spaces or spelling errors.",
+      "Confirm that the MCP server is reachable and operational.",
+    ],
+  },
+  {
+    title: "OAuth authorization fails",
+    items: [
+      "Check that you signed in with the correct PassLine account.",
+      "Verify that your account has the required permissions.",
+      "Retry the authorization process if the session has expired.",
+    ],
+  },
+  {
+    title: "PassLine is connected but its tools are unavailable",
+    items: [
+      "Refresh ChatGPT or start a new conversation.",
+      "Check the integration's connection status.",
+      "Confirm that the MCP server and your account have the necessary permissions.",
+    ],
+  },
+  {
+    title: "The custom MCP server option is missing",
+    items: [
+      "Check whether custom MCP connections are supported for your ChatGPT account and workspace.",
+      "Consult your workspace administrator if access is managed centrally.",
+    ],
+  },
+];
+
+const calloutStyle = {
+  note: "border-[#2F5BFF] bg-[#E8EEFF] text-[#1c3bb3] dark:border-[#8FB0FF] dark:bg-[#2F5BFF]/15 dark:text-[#B5C8FF]",
+  warn: "border-[#B96F0B] bg-[#FDF1DC] text-[#8A5208] dark:border-[#F5C26B] dark:bg-[#F5A524]/10 dark:text-[#F5C26B]",
+};
+
+const toc = [
+  { id: "demo", label: "Watch the setup" },
+  { id: "requirements", label: "What you'll need" },
+  ...steps.map((s, i) => ({ id: `step-${i + 1}`, label: `${i + 1}. ${s.title}` })),
+  { id: "troubleshooting", label: "Troubleshooting" },
+];
+---
+
+{
+  loadFonts && (
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+    </>
+  )
+}
+
+<div class={`${page} ${ink} ${body} text-[17px] leading-[1.6] antialiased`}>
+  <div class={`${wrap} pb-20 pt-8`}>
+    <!-- Header -->
+    <nav aria-label="Breadcrumb" class={`mb-6 text-sm ${muted}`}>
+      <a href={backHref} class={`no-underline hover:text-[#151B2E] dark:hover:text-white ${focus}`}>{backLabel}</a>
+      <span aria-hidden="true" class="mx-2">/</span>
+      <span aria-current="page">Connect to ChatGPT</span>
+    </nav>
+
+    <header class="mb-12 max-w-[720px]">
+      <p class="mb-3 inline-block rounded-full bg-[#E8EEFF] px-3 py-1 text-[13px] font-semibold text-[#2F5BFF] dark:bg-[#2F5BFF]/20 dark:text-[#9DB8FF]">
+        Setup guide · 9 steps
+      </p>
+      <h1 class={`${display} text-[length:clamp(36px,5vw,56px)] font-bold leading-[1.08] tracking-[-0.02em]`}>
+        How to connect PassLine ATS MCP to ChatGPT
+      </h1>
+      <p class={`mt-5 text-[19px] ${muted}`}>
+        Connect the PassLine ATS MCP server to ChatGPT so you can authorize access and use the integration from your ChatGPT client.
+      </p>
+    </header>
+
+    <div class="grid gap-12 min-[900px]:grid-cols-[230px_minmax(0,1fr)] min-[900px]:gap-14">
+      <!-- Table of contents -->
+      <aside class="min-[900px]:sticky min-[900px]:top-6 min-[900px]:self-start">
+        <nav aria-label="On this page">
+          <p class={`mb-3 hidden text-[13px] font-semibold uppercase tracking-wider min-[900px]:block ${muted}`}>On this page</p>
+          <ul class="m-0 hidden list-none gap-0.5 p-0 min-[900px]:grid">
+            {toc.map((t) => (
+              <li>
+                <a
+                  href={`#${t.id}`}
+                  class={`block rounded-lg px-3 py-1.5 text-[14.5px] no-underline transition-colors hover:bg-[#E8EEFF] hover:text-[#151B2E] dark:hover:bg-[#2F5BFF]/15 dark:hover:text-white ${muted} ${focus}`}
+                >
+                  {t.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <details class={`min-[900px]:hidden ${surface} rounded-xl border px-4 py-3 ${border}`}>
+            <summary class={`cursor-pointer text-[15px] font-semibold ${focus}`}>Jump to a step</summary>
+            <ul class="m-0 mt-2 grid list-none gap-0.5 p-0">
+              {toc.map((t) => (
+                <li><a href={`#${t.id}`} class={`block py-1.5 text-[14.5px] no-underline ${muted} ${focus}`}>{t.label}</a></li>
+              ))}
+            </ul>
+          </details>
+        </nav>
+      </aside>
+
+      <!-- Content -->
+      <main id="main" class="min-w-0">
+        <!-- GIF demo -->
+        <section id="demo" class="mb-14 scroll-mt-6" aria-labelledby="demo-title">
+          <h2 id="demo-title" class={`${h2} mb-2`}>Watch the setup</h2>
+          <p class={`mb-5 ${muted}`}>Prefer to see it first? Here's the full flow from adding the custom MCP server to authorizing access.</p>
+          <figure class="m-0">
+            <div class={`overflow-hidden rounded-[18px] border ${border} ${surface} shadow-[0_24px_60px_-28px_rgba(21,27,46,0.35)] dark:shadow-[0_24px_60px_-28px_rgba(0,0,0,0.75)]`}>
+              <div class={`flex items-center gap-1.5 border-b px-4 py-3 ${border}`} aria-hidden="true">
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+                <i class="h-2.5 w-2.5 rounded-full bg-[#E2E7F0] dark:bg-[#242E4A]"></i>
+              </div>
+              {
+                gifSrc ? (
+                  <img
+                    src={gifSrc}
+                    alt={gifAlt}
+                    width={gifWidth}
+                    height={gifHeight}
+                    loading="lazy"
+                    decoding="async"
+                    class="block h-auto w-full"
+                  />
+                ) : (
+                  <div
+                    class={`m-4 grid aspect-video place-items-center rounded-xl border-2 border-dashed p-6 text-center ${border} ${page}`}
+                    role="img"
+                    aria-label="Placeholder for the setup walkthrough GIF"
+                  >
+                    <div>
+                      <svg class={`mx-auto mb-3 ${muted}`} width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="3" />
+                        <circle cx="9" cy="10" r="1.6" />
+                        <path d="M21 16l-5-5-8 8" />
+                      </svg>
+                      <p class="font-semibold">Your walkthrough GIF goes here</p>
+                      <p class={`mt-1 text-sm ${muted}`}>
+                        Save it to <code class={codeCls}>/public/images/connect-passline-chatgpt.gif</code> and pass <code class={codeCls}>gifSrc="/images/connect-passline-chatgpt.gif"</code>.
+                      </p>
+                    </div>
+                  </div>
+                )
+              }
+            </div>
+            <figcaption class={`mt-3 text-sm ${muted}`}>{gifCaption}</figcaption>
+          </figure>
+        </section>
+
+        <!-- Requirements -->
+        <section id="requirements" class={`mb-8 scroll-mt-6 rounded-[18px] border p-6 min-[900px]:p-8 ${border} ${surface}`} aria-labelledby="req-title">
+          <h2 id="req-title" class={`${display} mb-4 text-2xl font-bold leading-tight tracking-[-0.02em]`}>What you'll need</h2>
+          <ul class="m-0 grid list-none gap-3 p-0">
+            {requirements.map((r) => <li class={`${checkItem} ${muted}`}>{r}</li>)}
+          </ul>
+        </section>
+
+        <!-- Server URL quick copy -->
+        <div class={`mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 ${border} ${surface}`}>
+          <div class="min-w-0">
+            <p class={`mb-1 text-[13px] font-semibold ${muted}`}>Server URL</p>
+            <code class={`block break-all text-[15px] ${mono}`} id="mcp-url">{mcpUrl}</code>
+          </div>
+          <button
+            type="button"
+            data-copy-target="mcp-url"
+            class={`rounded-xl border px-4 py-2.5 text-[15px] font-semibold transition-colors hover:border-[#c5cdde] dark:hover:border-[#3A4668] ${border} ${page} ${focus}`}
+          >
+            <span data-copy-label>Copy URL</span>
+          </button>
+        </div>
+
+        <!-- Steps -->
+        <ol class="m-0 grid list-none gap-6 p-0">
+          {
+            steps.map((s, i) => (
+              <li id={`step-${i + 1}`} class={`scroll-mt-6 rounded-[18px] border p-6 min-[900px]:p-8 ${border} ${surface}`}>
+                <div class="mb-4 flex items-center gap-3.5">
+                  <span class={`grid h-9 w-9 flex-none place-items-center rounded-full bg-[#151B2E] text-base font-semibold text-white dark:bg-[#E8EEFF] dark:text-[#0B1020] ${display}`} aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <h2 class={`${display} text-2xl font-bold leading-tight tracking-[-0.02em]`}>
+                    <span class="sr-only">Step {i + 1}: </span>{s.title}
+                  </h2>
+                </div>
+
+                {s.intro && <p class={`mb-3 ${muted}`}>{s.intro}</p>}
+
+                {s.items.length > 0 && (
+                  <ol class={`m-0 grid list-decimal gap-2 pl-6 marker:font-semibold marker:text-[#2F5BFF] dark:marker:text-[#8FB0FF] ${muted}`}>
+                    {s.items.map((item) => (
+                      <li class="pl-1" set:html={item} />
+                    ))}
+                  </ol>
+                )}
+
+                {s.table && (
+                  <div class={`overflow-x-auto rounded-xl border ${border}`}>
+                    <table class="w-full border-collapse text-[15px]">
+                      <thead>
+                        <tr class={page}>
+                          <th scope="col" class={`px-4 py-2.5 text-left text-[13px] font-semibold ${muted}`}>Field</th>
+                          <th scope="col" class={`px-4 py-2.5 text-left text-[13px] font-semibold ${muted}`}>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {s.table.map(([field, value]) => (
+                          <tr>
+                            <th scope="row" class={`whitespace-nowrap border-t px-4 py-3 text-left align-top font-semibold ${border}`}>{field}</th>
+                            <td class={`break-all border-t px-4 py-3 align-top ${border} ${muted}`} set:html={value} />
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {s.outro && <p class={`mt-4 ${muted}`} set:html={s.outro} />}
+
+                {s.callout && (
+                  <div class={`mt-5 rounded-xl border-l-[3px] px-4 py-3 text-[15px] ${calloutStyle[s.callout.tone]}`} role="note">
+                    <strong class="font-semibold">{s.callout.title}.</strong> {s.callout.text}
+                  </div>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+
+        <!-- Done -->
+        <section class="mt-14 rounded-[22px] border border-transparent bg-[#151B2E] px-7 py-10 text-white dark:border-[#242E4A] dark:bg-[#18213B]" aria-labelledby="done-title">
+          <h2 id="done-title" class={`${display} mb-3 text-[length:clamp(26px,3vw,34px)] font-bold leading-[1.1] tracking-[-0.02em]`}>You're ready to get started</h2>
+          <p class="max-w-[40em] text-[#B7C0D9]">
+            Once the connection and OAuth authorization are complete, you can start using the available PassLine ATS tools through ChatGPT.
+          </p>
+          <p class="mt-3 max-w-[40em] text-[#B7C0D9]">
+            For best results, start with a simple, read-only request to confirm the integration can retrieve the information you're authorized to access before attempting more sensitive operations.
+          </p>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section id="troubleshooting" class="mt-16 scroll-mt-6" aria-labelledby="ts-title">
+          <h2 id="ts-title" class={`${h2} mb-6`}>Troubleshooting</h2>
+          <div class="grid gap-3">
+            {
+              troubleshooting.map((t) => (
+                <details class={`group rounded-2xl border px-5 py-4 ${border} ${surface}`}>
+                  <summary class={`flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold [&::-webkit-details-marker]:hidden ${display} ${focus}`}>
+                    {t.title}
+                    <span class={`text-2xl leading-none transition-transform group-open:rotate-45 ${muted}`} aria-hidden="true">+</span>
+                  </summary>
+                  <ul class="m-0 mt-4 grid list-none gap-2.5 p-0">
+                    {t.items.map((item) => (
+                      <li class={`${checkItem} ${muted}`} set:html={item} />
+                    ))}
+                  </ul>
+                </details>
+              ))
+            }
+          </div>
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href={signupHref} class={`${btnPrimary} ${focus}`}>Create a PassLine account</a>
+            <a href={backHref} class={`text-[15px] font-medium no-underline hover:underline ${muted} ${focus}`}>Back to docs</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-target]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const target = document.getElementById(btn.dataset.copyTarget ?? "");
+      const label = btn.querySelector<HTMLElement>("[data-copy-label]");
+      if (!target || !label) return;
+      const original = label.textContent;
+      try {
+        await navigator.clipboard.writeText(target.textContent?.trim() ?? "");
+        label.textContent = "Copied!";
+      } catch {
+        label.textContent = "Press Ctrl/Cmd+C";
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+      setTimeout(() => (label.textContent = original), 2000);
+    });
+  });
+</script>
