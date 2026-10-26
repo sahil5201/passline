@@ -1,0 +1,30 @@
+services:
+  client:
+    build:
+      context: ./apps/client
+      dockerfile: Dockerfile
+      target: production
+    container_name: passline-client
+    profiles:
+      - production
+    ports:
+      - "8190:80"
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: passline-web
+    ports:
+      - "8191:3000"
+  
+  mcp:
+    build:
+      context: .
+      dockerfile: apps/mcp/Dockerfile
+    container_name: passline-mcp
+    ports:
+      - "8192:8080"
+    env_file:
+      - ./apps/mcp/.env.local
+    restart: unless-stopped
