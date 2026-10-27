@@ -11,7 +11,8 @@
     "dev:client": "bun run --cwd apps/client dev",
     "dev": "concurrently \"bun run dev:web\" \"bun run dev:mcp\" \"bun run dev:client\"",
     "typecheck": "bun run --filter @passline/core typecheck && bun run --filter @passline/db typecheck && bun run --filter web typecheck",
-    "build:web": "bun run --filter web build",
+    "build:web": "bun run --cwd apps/web build",
+    "preview:web":"bun run --cwd apps/web start",
     "lint:web": "bun run --filter web lint"
   },
   "packageManager": "bun@1.4.2",
