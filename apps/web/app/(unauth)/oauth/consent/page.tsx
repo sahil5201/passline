@@ -94,7 +94,7 @@ return (
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="break-words font-medium">
+                <p className="wrap-break-word font-medium">
                   {authDetails.client.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
